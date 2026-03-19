@@ -26,4 +26,4 @@ L'arborescence finale sera comme suit :
             └── tagdl.csv
 ```
 
-Une fois ces dossiers en place, vous pourrez exécuter les scripts Python (comme Projet_TAL_json.py ou generer_collection.py) normalement, car ils trouveront les données au bon endroit !
+Une fois ces dossiers en place, vous pourrez exécuter le script Python Projet_TAL_json.py (vous n'aurez pas besoin d'exécuter generer_collection.py car le dossier collection_test est déjà transmis via le Drive) normalement, car ils trouveront les données au bon endroit !
