@@ -1,0 +1,5 @@
+.DS_Store
+__pycache__/
+DWL_TAL/Dataset_Projet_TAL/collection_test/
+DWL_TAL/Dataset_Projet_TAL/raw/
+DWL_TAL/Dataset_Projet_TAL/scores/
