@@ -140,11 +140,11 @@ def search(query):
         # print(f"{rang}. {titre} (Score de similarité : {score})")
     return res
 
-query = input("Enter query : ")
-result = search(query)
-for doc_id,score in result:
-    titre = docs[doc_id]["title"]
-    print(f"{titre} (Score de similarité : {score})")
+# query = input("Enter query : ")
+# result = search(query)
+# for doc_id,score in result:
+#     titre = docs[doc_id]["title"]
+#     print(f"{titre} (Score de similarité : {score})")
 # Temps d'exécution
 # print(f"Temps d'exécution du tf-idf: {end - start}")
 # print(f"Temps d'exécution des postings: {end_posting - start_posting}")
