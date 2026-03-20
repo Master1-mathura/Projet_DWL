@@ -102,42 +102,51 @@ end = time.time()
 # ******************************************************************************** #
 # ********************** Étape 3 : Traitement de la requête ********************** #
 # ******************************************************************************** #
+def search(query):
+    # query = input("Enter your query : ")
+    tokens = tokenizer.tokenize(query.lower())
+    queryterms = [lemmatizer.lemmatize(t) for t in tokens if t not in stopwords]
 
-query = input("Enter your query : ")
-tokens = tokenizer.tokenize(query.lower())
-queryterms = [lemmatizer.lemmatize(t) for t in tokens if t not in stopwords]
-
-# Création du vecteur de la requête
-vecteur_query = [0.0] * len(liste_terme)
-for mot in queryterms : 
-    if mot in postings : 
-        index = liste_terme.index(mot)
-        tf = queryterms.count(mot)
-        vecteur_query[index] = tf * idf_score[mot]
+    # Création du vecteur de la requête
+    vecteur_query = [0.0] * len(liste_terme)
+    for mot in queryterms : 
+        if mot in postings : 
+            index = liste_terme.index(mot)
+            tf = queryterms.count(mot)
+            vecteur_query[index] = tf * idf_score[mot]
 
 # ******************************************************************************** #
 # ****************** Étape 4 : Calcul des scores de similarité ******************* #
 # ******************************************************************************** #
-        
-vect_query_arr = np.array(vecteur_query).reshape(1,-1)
+            
+    vect_query_arr = np.array(vecteur_query).reshape(1,-1)
 
-score_similarite = {}
-for filmID, vecteur in tf_idf.items() :
-    vecteur_film_arr = np.array(vecteur).reshape(1,-1)
-    # Similarité cosinus
-    cos = cosine_similarity(vect_query_arr,vecteur_film_arr)[0][0]
-    score_similarite[filmID] = cos
+    score_similarite = {}
+    for filmID, vecteur in tf_idf.items() :
+        vecteur_film_arr = np.array(vecteur).reshape(1,-1)
+        # Similarité cosinus
+        cos = cosine_similarity(vect_query_arr,vecteur_film_arr)[0][0]
+        score_similarite[filmID] = cos
 
-# Tri pour avoir les 5 meilleurs scores -> les films à éviter à toçut prix
-pires_5_films = sorted(score_similarite.items(), key=lambda x: x[1], reverse = True)[:5]
+    # Tri pour avoir les 5 meilleurs scores -> les films à éviter à toçut prix
+    pires_5_films = sorted(score_similarite.items(), key=lambda x: x[1], reverse = True)[:5]
 
-print("Vous devriez éviter le(s) film(s) : ")
-for rang, (filmID, score) in enumerate(pires_5_films, 1):
-    titre = docs[filmID]["title"]
-    print(f"{rang}. {titre} (Score de similarité : {score})")
+    res = []
 
+    # print("Vous devriez éviter le(s) film(s) : ")
+    for (filmID, score) in pires_5_films:
+        res.append((filmID, score))
+        # titre = docs[filmID]["title"]
+        # print(f"{rang}. {titre} (Score de similarité : {score})")
+    return res
+
+query = input("Enter query : ")
+result = search(query)
+for doc_id,score in result:
+    titre = docs[doc_id]["title"]
+    print(f"{titre} (Score de similarité : {score})")
 # Temps d'exécution
-print(f"Temps d'exécution du tf-idf: {end - start}")
-print(f"Temps d'exécution des postings: {end_posting - start_posting}")
-temps_total_end = time.time()
-print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
+# print(f"Temps d'exécution du tf-idf: {end - start}")
+# print(f"Temps d'exécution des postings: {end_posting - start_posting}")
+# temps_total_end = time.time()
+# print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
