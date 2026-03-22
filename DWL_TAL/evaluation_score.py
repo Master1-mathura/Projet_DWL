@@ -4,7 +4,6 @@ import math
 print("Load Moteur :")
 import Projet_TAL_json
 
-
 # pas besoin de parser les queries
 print("Etape 1 : ")
 df = pd.read_json("Dataset_Projet_TAL/collection_test/queries.json", encoding="utf-8")
@@ -77,12 +76,14 @@ def eval_nDCG(liste_film_recuperer, liste_paires):
                 liste_relscores.append(relscores)
                 founded = True
                 break
-    if not founded : 
-        liste_relscores.append(0)
+        if not founded : 
+            liste_relscores.append(0)
     
     DCG = compute_DCG(liste_relscores)
 
-    liste_ideal = sorted(liste_relscores, reverse=True)
+    toute_les_notes = [int(round(score *4)) for _,score in liste_paires]
+    note_triees = sorted(toute_les_notes, reverse=True)
+    liste_ideal = note_triees[:len(liste_film_recuperer)]
     IDCG = compute_DCG(liste_ideal)
 
     if IDCG == 0:
@@ -91,6 +92,27 @@ def eval_nDCG(liste_film_recuperer, liste_paires):
     nDCG = DCG / IDCG 
     return nDCG
 
+
+def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results,documents_pertinents, alpha=1.0, beta = 0.75,gamma=0.15,k = 5):
+
+    top_k_id = [docID for docID, score in top_results[:k]]
+    vrai_pertinets_id = [docID for docID in top_k_id if docID in documents_pertinents]
+    no_pertinent_id = [docID for docID in top_k_id if docID not in documents_pertinents]
+    if len(vrai_pertinets_id) == 0:
+        return vecteur_requete
+
+    revelant_vectors = [np.array(tfidf_matrice[idx]) for idx in vrai_pertinets_id]
+    moyenne_pertinent = np.mean(revelant_vectors,axis=0)
+    
+    if len(no_pertinent_id) > 0 :
+        non_relevant_vectors = [np.array(tfidf_matrice[idx]) for idx in no_pertinent_id]
+        moyenne_non_pertinent = np.mean(non_relevant_vectors,axis=0)
+    else : 
+        moyenne_non_pertinent = np.zeros(len(np.array(vecteur_requete)))
+   
+    augmented_query_vecteur = (np.array(vecteur_requete) * alpha) + (beta * moyenne_pertinent) - (gamma * moyenne_non_pertinent)
+
+    return augmented_query_vecteur.tolist()
 
 ap_scores = []
 rappel_scores = []
@@ -102,7 +124,12 @@ for queryID in parse_queries.keys():
     for el in qliste : 
         qrels_ui.append(el[0])
 
-    query_ui = Projet_TAL_json.search(parse_queries[queryID]['text'], n=1000)
+    vecteur_requete = Projet_TAL_json.traitement_requete(parse_queries[queryID]['text'])
+    vecteur_init = Projet_TAL_json.scores_simi(vecteur_requete, n = 250)
+
+    vecteur_augmente = pseudo_relevance_feedback(Projet_TAL_json.tf_idf, vecteur_requete, vecteur_init, qrels_ui, alpha = 1.0, beta = 0.75,gamma = 0.25, k = 5)
+    query_ui = Projet_TAL_json.scores_simi(vecteur_augmente, n = 250)
+    
     query_ui_ids = [filmID for filmID, _ in query_ui]
     
     recall = eval_rappel(query_ui_ids, qrels_ui)
@@ -118,8 +145,21 @@ print("MAP: ", np.mean(ap_scores))
 print("Avg. nDCG: ", np.mean(ndcg_scores))
     
 
-def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,meilleur_document_index,alpha=0.5):
-    top_doc_vecteur = tfidf_matrice[meilleur_document_index]
-    augmented_query_vecteur = vecteur_requete + alpha * top_doc_vecteur
+# def sbert():
+#     model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
+#     doc_texte = []
+#     doc_id = []
 
-    return augmented_query_vecteur
+#     for id, data in doc_film.items():
+#         doc_texte.append(data["text"])
+#         doc_id.append(id)
+    
+#     query = parse_queries[54797]['text']
+#     ranks = model.rank(query, doc_texte,return_documents=False)
+
+    
+#     print("Query :", query)
+#     for rank in ranks[:5] : 
+#         index_liste = rank['corpus_id']
+#         titre = doc_film[doc_id[index_liste]]["title"]
+#         print(f"- {titre} (Score SBERT : {rank['score']:.4f})")
