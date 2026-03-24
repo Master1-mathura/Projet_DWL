@@ -9,7 +9,7 @@ print("Etape 1 : ")
 df = pd.read_json("Dataset_Projet_TAL/collection_test/queries.json", encoding="utf-8")
 parse_queries = df.set_index('query_id').to_dict(orient='index')
 doc_film = Projet_TAL_json.docs
-# Chargement des donnÃ©es
+# Chargement des données
 
 def load_qrels(file_path):
     qrels_data = {}
@@ -93,6 +93,20 @@ def eval_nDCG(liste_film_recuperer, liste_paires):
     return nDCG
 
 
+def pseudo_relevance_feedback_cours(tfidf_matrice,vecteur_requete,top_results, k = 5, nb_mot  = 10):
+    top_k_ids = [docID for docID, _ in top_results[:k]]
+    
+    somme_vecteur = np.zeros(len(vecteur_requete))
+    for docID in top_k_ids :
+        somme_vecteur += np.array(tfidf_matrice[docID])
+    
+    meilleurs_indices = np.argsort(somme_vecteur)[-nb_mot:]
+    
+    nouvelle_requete = list(vecteur_requete)
+    for idx in meilleurs_indices: 
+        nouvelle_requete[idx] += (somme_vecteur[idx]/k)
+    
+    return nouvelle_requete
 def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results,documents_pertinents, alpha=1.0, beta = 0.75,gamma=0.15,k = 5):
 
     top_k_id = [docID for docID, score in top_results[:k]]
@@ -125,11 +139,23 @@ for queryID in parse_queries.keys():
         qrels_ui.append(el[0])
 
     vecteur_requete = Projet_TAL_json.traitement_requete(parse_queries[queryID]['text'])
-    vecteur_init = Projet_TAL_json.scores_simi(vecteur_requete, n = 250)
+    vecteur_init = Projet_TAL_json.scores_simi(vecteur_requete, n = 1000)
+    print("--------------------------------------")
+    for doc_id,score in vecteur_init[:5]:
+        titre = doc_film[doc_id]["title"]
+        print(f"{titre} (Score de similarité : {score})")
 
-    vecteur_augmente = pseudo_relevance_feedback(Projet_TAL_json.tf_idf, vecteur_requete, vecteur_init, qrels_ui, alpha = 1.0, beta = 0.75,gamma = 0.25, k = 5)
-    query_ui = Projet_TAL_json.scores_simi(vecteur_augmente, n = 250)
+    vecteur_augmente = pseudo_relevance_feedback(Projet_TAL_json.tf_idf, vecteur_requete, vecteur_init, qrels_ui, alpha = 1.0, beta = 0.6, k = 15)
+    print("----------------------PRF-------------------------")
+    query_ui = Projet_TAL_json.scores_simi(vecteur_augmente, n = 1000)
     
+    for doc_id,score in query_ui[:5]:
+        titre = doc_film[doc_id]["title"]
+        print(f"{titre} (Score de similarité : {score})")
+    
+    print("--------------------------------------")
+    print()
+    print()
     query_ui_ids = [filmID for filmID, _ in query_ui]
     
     recall = eval_rappel(query_ui_ids, qrels_ui)
@@ -143,23 +169,3 @@ for queryID in parse_queries.keys():
 print("Avg. Recall: ", np.mean(rappel_scores))
 print("MAP: ", np.mean(ap_scores))
 print("Avg. nDCG: ", np.mean(ndcg_scores))
-    
-
-# def sbert():
-#     model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
-#     doc_texte = []
-#     doc_id = []
-
-#     for id, data in doc_film.items():
-#         doc_texte.append(data["text"])
-#         doc_id.append(id)
-    
-#     query = parse_queries[54797]['text']
-#     ranks = model.rank(query, doc_texte,return_documents=False)
-
-    
-#     print("Query :", query)
-#     for rank in ranks[:5] : 
-#         index_liste = rank['corpus_id']
-#         titre = doc_film[doc_id[index_liste]]["title"]
-#         print(f"- {titre} (Score SBERT : {rank['score']:.4f})")

@@ -34,10 +34,8 @@ def parsing_script(script,dico):
 
         if balise_scene :
             mot_sans_punct = ''.join(c for c in mot if c not in string.punctuation)
-            for key,value in dico.items():
-                if mot_sans_punct in value : 
-                    mot = f"{mot_sans_punct} {key}"
-                    break 
+            if mot_sans_punct.lower() in dico.keys() : 
+                mot = f"{mot_sans_punct.lower()} {dico[mot_sans_punct.lower()]}"
             scene_description.append(mot) 
     return " ".join(scene_description)
 
@@ -45,14 +43,13 @@ def theme_dico(liste_theme):
     mot_a_theme = {}
     for theme in liste_theme : 
         mot_virtuel = f"THEME_{theme.upper()}"
-        mot_a_theme[mot_virtuel] = [theme]
+        mot_a_theme[theme.lower()] = mot_virtuel
         
         synset = wn.synsets(theme)[0]
         for hypo in synset.hyponyms():
             for lemma in hypo.lemmas():
                 theme_mot = lemma.name().lower().replace("_"," ").replace("-", " ")
-                if theme_mot not in mot_a_theme[mot_virtuel]:
-                    mot_a_theme[mot_virtuel].append(theme_mot)
+                mot_a_theme[theme_mot.lower()] = mot_virtuel
     return mot_a_theme 
 
 # Chargement des données
@@ -78,7 +75,7 @@ postings = {}
 tagger = UnigramTagger(brown.tagged_sents())
 
 print("Debut postings")
-# tag_map = {'J': wn.ADJ, 'V': wn.VERB, 'R': wn.ADV}
+tag_map = {'J': wn.ADJ, 'V': wn.VERB, 'R': wn.ADV}
 for filmID, data in docs.items():
     script = data["text"]
     tokens = script.split()
@@ -87,16 +84,12 @@ for filmID, data in docs.items():
     for mot, tag in liste_postag:
         if mot.startswith("THEME_"):
             t = mot
-        #NNP : Nom Propres Singulier
-        #NNPS : Nom Propres Pluriel
-        #MD : Modal
-        #NN-TL : Nom singulier en debut de phrase
-        elif tag not in ('NNP', 'NNPS','MD','NN-TL') :
+        elif tag not in ('NNP', 'NNPS','MD',None) :
             token_lower = mot.lower() 
             if token_lower not in stopwords_set:
                 if token_lower  not in lemme : 
-                    # wn_tag = tag_map.get(tag[0].upper(), wn.NOUN) 
-                    lemme[token_lower] = lemmatizer.lemmatize(token_lower)
+                    wn_tag = tag_map.get(tag[0].upper(), wn.NOUN) 
+                    lemme[token_lower] = lemmatizer.lemmatize(token_lower,pos = wn_tag)
                 t = lemme[token_lower]
             else : 
                 continue
@@ -147,21 +140,17 @@ def traitement_requete(query, dico_theme = mot_a_theme):
     tokens = tokenizer.tokenize(query)
     tags = tagger.tag(tokens)
     queryterms = []
-    for mot,_ in tags:
+    for mot,tag in tags:
         mot_lower = mot.lower()
-        found_theme = False
-        for thm_virt, hyponyms in dico_theme.items():
-            if mot_lower in hyponyms:
-                queryterms.append(thm_virt)
-                queryterms.append(mot_lower)
-                found_theme = True
-                break
-        if not found_theme:
+        if mot_lower in dico_theme.keys():
+            queryterms.append(dico_theme[mot_lower])
+            queryterms.append(mot_lower)
+        if tag in ('NN', 'NNS', 'JJ', 'JJR', 'JJS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ') or tag is None:
             if mot_lower not in stopwords_set:
                 lemme_mot = lemmatizer.lemmatize(mot_lower)
                 queryterms.append(lemme_mot)          
-        
-    #print("Nouvelle requete : ", queryterms)
+            
+    print("Nouvelle requete : ", queryterms)
     # Création du vecteur de la requête
     vecteur_query = [0.0] * len(liste_terme)
     terme_index = {term : i for i,term in enumerate(liste_terme)}
@@ -169,7 +158,7 @@ def traitement_requete(query, dico_theme = mot_a_theme):
         if mot in postings : 
             index = terme_index[mot]
             tf = queryterms.count(mot)
-            vecteur_query[index]  = (1 + math.log10(tf)) * idf_score[mot]
+            vecteur_query[index] = (1 + math.log10(tf)) * idf_score[mot]
     return vecteur_query
 # ******************************************************************************** #
 # ****************** Étape 4 : Calcul des scores de similarité ******************* #
@@ -195,12 +184,12 @@ def scores_simi(vecteur_query, n = 5):
         res.append((filmID, score))
     return res
 
-query = input("Enter query : ")
-result = scores_simi(traitement_requete(query))
-for doc_id,score in result:
-    titre = docs[doc_id]["title"]
-    print(f"{titre} (Score de similarité : {score})")
-print(f"Temps d'exécution du tf-idf: {end - start}")
-print(f"Temps d'exécution des postings: {end_posting - start_posting}")
-temps_total_end = time.time()
-print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
+# query = input("Enter query : ")
+# result = scores_simi(traitement_requete(query))
+# for doc_id,score in result:
+#     titre = docs[doc_id]["title"]
+#     print(f"{titre} (Score de similarité : {score})")
+# print(f"Temps d'exécution du tf-idf: {end - start}")
+# print(f"Temps d'exécution des postings: {end_posting - start_posting}")
+# temps_total_end = time.time()
+# print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
