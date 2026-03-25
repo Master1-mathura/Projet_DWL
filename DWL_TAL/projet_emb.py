@@ -4,22 +4,31 @@ os.environ["USE_TF"] = "0"
 os.environ["USE_TORCH"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
-import torch
-torch.set_num_threads(1)
 
 # début du code
 import pandas as pd
 import time
+import torch
 from sentence_transformers import SentenceTransformer, util # importation du SBERT
 
 model = SentenceTransformer('all-MiniLM-L6-v2') # dimension des vecteurs = 384
+
+
+def decouper_texte(texte, taille_morceau=200):
+    #Découpe un long texte en une liste de petits morceaux de N mots.
+    mots = texte.split()
+    morceaux = []
+    for i in range(0, len(mots), taille_morceau):
+        morceau = " ".join(mots[i : i + taille_morceau])
+        morceaux.append(morceau)
+    return morceaux
+
 
 # nettoyage des scripts
 def parsing_script(script):
     # Extraction uniquement du texte compris entre les balises <scene_description>
     script = script.replace("<", " <").replace(">","> ")
     script = script.split()
-
     scene_description = []
     balise_scene = False
     for mot in script:
@@ -33,9 +42,13 @@ def parsing_script(script):
 
         if balise_scene :
             scene_description.append(mot)
-    return " ".join(scene_description)
+    test = decouper_texte(" ".join(scene_description))
+    return test
+
+
 
 # chargement des données :
+start = time.time()
 df = pd.read_json("Dataset_Projet_TAL/collection_test/corpus.json", encoding="utf-8")
 df['text'] = df['text'].apply(parsing_script)
 docs = df.set_index('doc_id').to_dict(orient='index')
@@ -47,11 +60,27 @@ doc_texts = [docs[doc_id]["text"] for doc_id in doc_ids] # liste où chaque case
 # Mettre en matrice (vecteurs) les scripts via SBERT :
 # print("Début d'encodage des scripts")
 # doc_embedding = model.encode(doc_texts, convert_to_tensor=True)
-print("Début d'encodage des scripts")
 # pas juste embedding sur tout, mais on calcule 16 scripts à la fois (diminue à 8 si ça rame) et on affiche une barre de progression
-doc_embedding = model.encode(doc_texts, convert_to_tensor=True, batch_size=16, show_progress_bar=True) 
-print("Fin d'encodage des scripts")
-print("Fin d'encodage des scripts")
+
+sauvegarde = "embeddings_films.pt"
+
+if os.path.exists(sauvegarde):
+    print("Fichier de vecteurs trouvé ! ")
+    doc_embedding = torch.load(sauvegarde)
+    print("Chargement terminé.")
+else : 
+    print("Debut encodage des scripts")
+    doc_embedding = []
+    for film in doc_texts[:15]:
+        vecteurs_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=True,batch_size = 62)
+
+        vecteur_moyen = torch.mean(vecteurs_morceaux,dim=0)
+
+        doc_embedding.append(vecteur_moyen)
+
+    print("Fin d'encodage des scripts")
+    torch.save(doc_embedding,sauvegarde)
+print("Ok")
 
 # Traitement de la requête :
 def traitement_requete(query):
@@ -86,56 +115,10 @@ def scores_simi(query_embedding, n = 5):
         resultat.append((vrai_doc_id,score))
     return resultat
 
-# # à régler :
-# sauvegarder la partie mise en matrice pour éviter d'avoir à la faire toçut le temps
-
-# gemini propose :
-# # --- Mettre en matrice (vecteurs) les scripts via SBERT ---
-
-# chemin_sauvegarde = "embeddings_films.pt"
-
-# # On vérifie si on a déjà fait le calcul avant
-# if os.path.exists(chemin_sauvegarde):
-#     print("Fichier de vecteurs trouvé ! Chargement en cours...")
-#     doc_embedding = torch.load(chemin_sauvegarde)
-#     print("Chargement terminé.")
-# else:
-#     print("Début d'encodage des scripts (ça peut prendre un peu de temps...)")
-#     doc_embedding = model.encode(
-#         doc_texts, 
-#         convert_to_tensor=True,
-#         batch_size=16,          
-#         show_progress_bar=True  
-#     ) 
-#     print("Fin d'encodage des scripts")
-    
-#     # Sauvegarde du tenseur sur ton disque dur
-#     torch.save(doc_embedding, chemin_sauvegarde)
-#     print(f"Vecteurs sauvegardés avec succès dans : {chemin_sauvegarde}")
-
-# # --- Traitement de la requête (la suite de ton code) ---
-# def traitement_requete(query):
-# # ...
-    
-# 2) SBERT (all-MiniLM-L6-v2) a une mémoire courte : il ne lit que les ~250 premiers mots.
-
-# Si, après ton nettoyage (parsing_script), la description de ta scène pour un film fait 3000 mots, SBERT va ignorer les 2750 derniers mots. Ton encodage se fera sans erreur, le code va marcher, mais tes recherches de similarité se baseront uniquement sur le tout début de chaque script.
-
-# éviter la limite des 250 mots ? (La méthode du "Chunking")
-# Puisque all-MiniLM-L6-v2 ne peut lire que de petits blocs de texte, la solution standard en TAL s'appelle le Chunking (le découpage). L'idée est simple :
-
-# Tu découpes le script d'un film en plusieurs petits "morceaux" de 200 mots.
-
-# Tu demandes à SBERT de transformer chaque morceau en vecteur.
-
-# Tu fais la moyenne de tous ces vecteurs pour obtenir un seul "Vecteur Global" qui représente tout le film.
-
-# pour ça :
-# def decouper_texte(texte, taille_morceau=200):
-#     """Découpe un long texte en une liste de petits morceaux de N mots."""
-#     mots = texte.split()
-#     morceaux = []
-#     for i in range(0, len(mots), taille_morceau):
-#         morceau = " ".join(mots[i : i + taille_morceau])
-#         morceaux.append(morceau)
-#     return morceaux
+query = "I am afraid of spider"
+output = scores_simi(traitement_requete(query))
+print("TOP 5 : \n")
+for id,score in output : 
+    print(f"FILM : {docs[id]['title']} avec score : {score}\n")
+end = time.time()
+print(f"Temps d'exécution total du programme : {end - start}")
