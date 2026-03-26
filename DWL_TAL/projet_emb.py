@@ -56,6 +56,11 @@ docs = df.set_index('doc_id').to_dict(orient='index')
 # Récupération des id des films et de leur script :
 doc_ids = list(docs.keys())
 doc_texts = [docs[doc_id]["text"] for doc_id in doc_ids] # liste où chaque case = 1 script
+# 1. On récupère l'ID du film à l'index 108
+id_film_vide = doc_ids[108]
+
+# 2. On utilise cet ID pour aller chercher le titre dans ton dictionnaire
+nom_film_vide = docs[id_film_vide]['title']
 
 # Mettre en matrice (vecteurs) les scripts via SBERT :
 # print("Début d'encodage des scripts")
@@ -71,16 +76,20 @@ if os.path.exists(sauvegarde):
 else : 
     print("Debut encodage des scripts")
     doc_embedding = []
-    for film in doc_texts[:15]:
-        vecteurs_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=True,batch_size = 62)
+    total_films = len(doc_texts)
+    for i,film in enumerate(doc_texts):
+        if len(film) == 0:
+            vecteur_moyen = torch.zeros(384)
+        else : 
+            vecteurs_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
 
-        vecteur_moyen = torch.mean(vecteurs_morceaux,dim=0)
+            vecteur_moyen = torch.mean(vecteurs_morceaux,dim=0)
 
         doc_embedding.append(vecteur_moyen)
-
+        print(f"Encodage du film {i + 1} / {total_films}...", end="\r")
     print("Fin d'encodage des scripts")
     torch.save(doc_embedding,sauvegarde)
-print("Ok")
+print("Ok",i+1)
 
 # Traitement de la requête :
 def traitement_requete(query):
