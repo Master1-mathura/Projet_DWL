@@ -2,7 +2,7 @@
 
 Les données du projet étant trop volumineuses pour GitHub, elles sont hébergées sur Google Drive. Pour exécuter le code et reproduire les résultats, veuillez suivre ces étapes :
 
-1. Téléchargez l'archive en cliquant sur ce lien : https://drive.google.com/file/d/1hduf-4T8FU6ckJjoNA6cKthIVLw175U-/view?usp=sharing.
+1. Téléchargez l'archive en cliquant sur ce lien : https://drive.google.com/drive/folders/19ti2-82yTjm8DlCH-d22emAAJSQcunXa?usp=sharing.
 2. Décompressez le fichier `.zip`.
 3. Placez les dossiers extraits dans le répertoire `DWL_TAL/Dataset_Projet_TAL/`.
 
