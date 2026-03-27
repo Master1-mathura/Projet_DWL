@@ -110,7 +110,13 @@ for queryID in parse_queries.keys():
     for el in donnees_perti_requete : 
         ids_perti_attendus.append(el[0])
 
-    vecteur_requete_test = projet_emb.traitement_requete(parse_queries[queryID]['text'])
+    query_text = parse_queries[queryID]['text']
+    
+    print("\n" + "="*100)
+    print(f"Query : {query_text}")
+    print("="*100)
+
+    vecteur_requete_test = projet_emb.traitement_requete(query_text)
     res_init_test = projet_emb.scores_simi(vecteur_requete_test, n = max_qrels)
 
     for doc_id, score in res_init_test[:lim_affichage]:

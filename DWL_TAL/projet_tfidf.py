@@ -62,7 +62,7 @@ df['text'] = df['text'].apply(lambda x: parsing_script(x,mot_a_theme))
 docs = df.set_index('doc_id').to_dict(orient='index')
 
 # ******************************************************************************** #
-# ******************** Étape 1 : Création de l'index inversé ********************* #
+# ******************** Étape 2 : Création de l'index inversé ********************* #
 # ******************************************************************************** #
 tokenizer = RegexpTokenizer(r"\w+")
 start_posting = time.time()
@@ -101,7 +101,7 @@ for filmID, data in docs.items():
 end_posting = time.time()
 
 # ******************************************************************************** #
-# ********************** Étape 2 : Calcul des scores TF-IDF ********************** #
+# ********************** Étape 3 : Calcul des scores TF-IDF ********************** #
 # ******************************************************************************** #
 
 start = time.time()
@@ -124,10 +124,9 @@ for i,terme in enumerate(postings):
 end = time.time()
 
 # ******************************************************************************** #
-# ********************** Étape 3 : Traitement de la requête ********************** #
+# ********************** Étape 4 : Traitement de la requête ********************** #
 # ******************************************************************************** #
-#Attention mettre le dico en param
-#Par default, c'est n = 5 et dico_theme = mot_a_theme, peut-etre faire la meme pour le parsing
+
 def traitement_requete(query, dico_theme = mot_a_theme):
     tokens = tokenizer.tokenize(query)
     queryterms = []
@@ -143,7 +142,6 @@ def traitement_requete(query, dico_theme = mot_a_theme):
             lemme_mot = lemmatizer.lemmatize(mot_lower)
             queryterms.append(lemme_mot)
 
-    # Création du vecteur de la requête
     vecteur_query = [0.0] * len(liste_terme)
     terme_index = {term : i for i,term in enumerate(liste_terme)}
     for mot in queryterms : 
@@ -154,7 +152,7 @@ def traitement_requete(query, dico_theme = mot_a_theme):
     return vecteur_query
 
 # ******************************************************************************** #
-# ****************** Étape 4 : Calcul des scores de similarité ******************* #
+# ****************** Étape 5 : Calcul des scores de similarité ******************* #
 # ******************************************************************************** #
 
 def scores_simi(vecteur_query, n = 5):  
@@ -172,7 +170,6 @@ def scores_simi(vecteur_query, n = 5):
 
     liste_scores_films_trie = []
 
-    # print("Vous devriez éviter le(s) film(s) : ")
     for (filmID, score) in pires_n_films:
         liste_scores_films_trie.append((filmID, score))
     return liste_scores_films_trie
