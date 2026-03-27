@@ -1,14 +1,16 @@
 import pandas as pd
 import numpy as np
 import math
+import torch
 print("Load Moteur :")
-import Projet_TAL_json
+import projet_emb
+from sentence_transformers import util
 
 # pas besoin de parser les queries
 print("Etape 1 : ")
 df = pd.read_json("Dataset_Projet_TAL/collection_test/queries.json", encoding="utf-8")
 parse_queries = df.set_index('query_id').to_dict(orient='index')
-doc_film = Projet_TAL_json.docs
+doc_film = projet_emb.docs
 # Chargement des données
 
 def load_qrels(file_path):
@@ -93,70 +95,59 @@ def eval_nDCG(liste_film_recuperer, liste_paires):
     return nDCG
 
 
-def pseudo_relevance_feedback_cours(tfidf_matrice,vecteur_requete,top_results, k = 5, nb_mot  = 10):
-    top_k_ids = [docID for docID, _ in top_results[:k]]
-    
-    somme_vecteur = np.zeros(len(vecteur_requete))
-    for docID in top_k_ids :
-        somme_vecteur += np.array(tfidf_matrice[docID])
-    
-    meilleurs_indices = np.argsort(somme_vecteur)[-nb_mot:]
-    
-    nouvelle_requete = list(vecteur_requete)
-    for idx in meilleurs_indices: 
-        nouvelle_requete[idx] += (somme_vecteur[idx]/k)
-    
-    return nouvelle_requete
-def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results,documents_pertinents, alpha=1.0, beta = 0.75,gamma=0.15,k = 5):
+def pseudo_relevance_feedback(query_vector, top_results, doc_embeddings, doc_ids, alpha = 0.7, k =10):
+    doc_id_to_idx = {id : i for i, id in enumerate(doc_ids)}
 
-    top_k_id = [docID for docID, score in top_results[:k]]
-    vrai_pertinets_id = [docID for docID in top_k_id if docID in documents_pertinents]
-    no_pertinent_id = [docID for docID in top_k_id if docID not in documents_pertinents]
-    if len(vrai_pertinets_id) == 0:
-        return vecteur_requete
+    pseudo_pertinents_id = [docID for docID, score in top_results[:k]]
 
-    revelant_vectors = [np.array(tfidf_matrice[idx]) for idx in vrai_pertinets_id]
-    moyenne_pertinent = np.mean(revelant_vectors,axis=0)
+    if len(pseudo_pertinents_id) == 0:
+        return query_vector
+
+    relevant_vectors = []
+    for docID in pseudo_pertinents_id:
+        idx = doc_id_to_idx[docID]
+        doc_chunk = doc_embeddings[idx]
+
+        # alignement matériel (mac/windows)
+        doc_chunk = doc_chunk.to(query_vector.device)
+        
+        doc_mean_vector = torch.mean(doc_chunk,dim=0)
+        relevant_vectors.append(doc_mean_vector)
+
+    moyenne_pertinent = torch.mean(torch.stack(relevant_vectors), dim = 0)
     
-    if len(no_pertinent_id) > 0 :
-        non_relevant_vectors = [np.array(tfidf_matrice[idx]) for idx in no_pertinent_id]
-        moyenne_non_pertinent = np.mean(non_relevant_vectors,axis=0)
-    else : 
-        moyenne_non_pertinent = np.zeros(len(np.array(vecteur_requete)))
-   
-    augmented_query_vecteur = (np.array(vecteur_requete) * alpha) + (beta * moyenne_pertinent) - (gamma * moyenne_non_pertinent)
+    augmented_query_vector = query_vector + alpha * moyenne_pertinent
 
-    return augmented_query_vecteur.tolist()
+    return augmented_query_vector
+
 
 ap_scores = []
 rappel_scores = []
 ndcg_scores = []
-
+max_qrels = max(len(qrels_data[q]) for q in qrels_data)
+nb_film_envoyer_a_user = projet_emb.nb_films_envoyer_a_user
 for queryID in parse_queries.keys():
     qliste = qrels_data[queryID]
     qrels_ui = []
     for el in qliste : 
         qrels_ui.append(el[0])
 
-    vecteur_requete = Projet_TAL_json.traitement_requete(parse_queries[queryID]['text'])
-    vecteur_init = Projet_TAL_json.scores_simi(vecteur_requete, n = 1000)
-    print("--------------------------------------")
-    for doc_id,score in vecteur_init[:5]:
-        titre = doc_film[doc_id]["title"]
-        print(f"{titre} (Score de similarité : {score})")
+    vecteur_requete = projet_emb.traitement_requete(parse_queries[queryID]['text'])
+    query_ui_init = projet_emb.scores_simi(vecteur_requete, n = max_qrels)
 
-    vecteur_augmente = pseudo_relevance_feedback(Projet_TAL_json.tf_idf, vecteur_requete, vecteur_init, qrels_ui, alpha = 1.0, beta = 0.6, k = 15)
-    print("----------------------PRF-------------------------")
-    query_ui = Projet_TAL_json.scores_simi(vecteur_augmente, n = 1000)
-    
-    for doc_id,score in query_ui[:5]:
+    for doc_id, score in query_ui_init[:nb_film_envoyer_a_user]:
         titre = doc_film[doc_id]["title"]
-        print(f"{titre} (Score de similarité : {score})")
+        print(f"  - {titre} (Score : {score:.4f})")
+
+    vecteur_augmente = pseudo_relevance_feedback(vecteur_requete,query_ui_init,projet_emb.doc_embedding,projet_emb.doc_ids,alpha=0.7,k=10)
+    print("----------------------PRF-------------------------")
+    query_ui_prf = projet_emb.scores_simi(vecteur_augmente, n = max_qrels)
+
+    for doc_id, score in query_ui_prf[:nb_film_envoyer_a_user]:
+        titre = doc_film[doc_id]["title"]
+        print(f"  - {titre} (Score : {score:.4f})")
     
-    print("--------------------------------------")
-    print()
-    print()
-    query_ui_ids = [filmID for filmID, _ in query_ui]
+    query_ui_ids = [filmID for filmID, _ in query_ui_prf]
     
     recall = eval_rappel(query_ui_ids, qrels_ui)
     ap = eval_AP(query_ui_ids, qrels_ui)
