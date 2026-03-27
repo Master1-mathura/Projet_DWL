@@ -1,131 +1,153 @@
-# Pour éviter les erreurs sur mac (car encode() déclenche plusieurs calculs (tokenizers, pytorch etc.) => plusieurs threads => deadlock) :
-import os
+import os # Pour éviter les deadlocks sur macOS
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
 os.environ["USE_TF"] = "0"
 os.environ["USE_TORCH"] = "1"
 
-# Début du code
 import pandas as pd
 import time
 import torch
-from sentence_transformers import SentenceTransformer, util # importation du SBERT et ses fonctionnalités
+from sentence_transformers import SentenceTransformer, util
 
-model = SentenceTransformer('all-MiniLM-L6-v2') # dimension des vecteurs = 384
+
+# ******************************************************************************** #
+# ********************** Étape 1 : Initialisation du modèle ********************** #
+# **********************           + Prétraitement du texte ********************** #
+# ******************************************************************************** #
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def decouper_texte(texte, taille_morceau=200,chevauchement = 50):
-    #Découpe un long texte en une liste de petits morceaux de N mots.
     mots = texte.split()
-    morceaux = []
+    liste_morceaux = []
     
     pas = taille_morceau - chevauchement
     for i in range(0, len(mots), pas):
         morceau = " ".join(mots[i : i + taille_morceau])
-        morceaux.append(morceau)
-    return morceaux
+        liste_morceaux.append(morceau)
+    return liste_morceaux
 
-
-# nettoyage des scripts
 def parsing_script(script):
-    # Extraction uniquement du texte compris entre les balises <scene_description>
     script = script.replace("<", " <").replace(">","> ")
     script = script.split()
     scene_description = []
-    balise_scene = False
+    dans_balise_scene = False
     for mot in script:
         if mot == "<scene_description>":
-            balise_scene = True
+            dans_balise_scene = True
             continue
 
         if mot == "</scene_description>":
-            balise_scene = False 
+            dans_balise_scene = False 
             continue
 
-        if balise_scene :
+        if dans_balise_scene :
             scene_description.append(mot)
-    test = decouper_texte(" ".join(scene_description))
-    return test
+    script_decoupe = decouper_texte(" ".join(scene_description))
+    return script_decoupe
 
-# chargement des données :
+# ******************************************************************************** #
+# ****************** Étape 2 : Chargement et parsing des données ***************** #
+# ******************************************************************************** #
+
 start = time.time()
 df = pd.read_json("Dataset_Projet_TAL/collection_test/corpus.json", encoding="utf-8")
 df['text'] = df['text'].apply(parsing_script)
-docs = df.set_index('doc_id').to_dict(orient='index')
+dico_films = df.set_index('doc_id').to_dict(orient='index')
 
-# Récupération des id des films et de leur script :
-doc_ids = list(docs.keys())
-doc_texts = [docs[doc_id]["text"] for doc_id in doc_ids] # liste où chaque case = 1 script
+liste_ids_films = list(dico_films.keys())
+liste_textes_films = [dico_films[doc_id]["text"] for doc_id in liste_ids_films]
+
+# ******************************************************************************** #
+# ****************** Étape 3 : Encodage des scripts (Embeddings) ***************** #
+# ******************************************************************************** #
 
 sauvegarde = "embeddings_films.pt"
 
 if os.path.exists(sauvegarde):
-    print("Fichier de vecteurs trouvé ! ")
     doc_embedding = torch.load(sauvegarde)
-    print("Chargement terminé.")
 else : 
-    print("Debut encodage des scripts")
     doc_embedding = []
-    total_films = len(doc_texts)
-    for i,film in enumerate(doc_texts):
+    total_films = len(liste_textes_films)
+    for i,film in enumerate(liste_textes_films):
         if len(film) == 0:
-            #torch.zeros attend un tuple 
-            vecteurs_morceaux = torch.zeros((1,384))
+            vecteurs_liste_morceaux = torch.zeros((1,384))
         else : 
-            #batch_size : Le nombre de texte qu'on envoie en meme temps au processeur
-            vecteurs_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
+            vecteurs_liste_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
 
-        doc_embedding.append(vecteurs_morceaux)
+        doc_embedding.append(vecteurs_liste_morceaux)
         print(f"Encodage du film {i + 1} / {total_films}...", end="\r")
     torch.save(doc_embedding,sauvegarde)
-print("Ok")
 
-# Traitement de la requête :
+# ******************************************************************************** #
+# **************** Étape 4 : Traitement de la requête et scoring ***************** #
+# ******************************************************************************** #
+
 def traitement_requete(query):
-    print("Début d'encodage des queries")
-    query_embedding = model.encode(query, convert_to_tensor=True)
-    print("Fin d'encodage des queries")
-    return query_embedding
+    vecteur_requete = model.encode(query, convert_to_tensor=True)
+    return vecteur_requete
 
-
-# Calcul des scores (cosinus similarité):
-def scores_simi(query_embedding, n = 100, k = 5):
-    # semantic_search : peut traiter plusieurs requetes en même temps => ça donne une liste de liste
-    # "traiter" :
-        # SBERT prend le vecteur de la requête
-        # il calcule la similarité cos avec chaque film
-        # il les trie en fonction de leurs score (si proche de 1 alors ++ pertinent)
-        # il choisit les k premiers films
-    # sauf que nous on envoie qu'une seule requête d'où [0]
-    # liste_films = util.semantic_search(query_embedding, doc_embedding, top_k = n)[0]
-
-    resultat = []
-    # on va parcourir les films affichés pour chaque requête
-    #Vidur : Revoir le max et top-k
+def scores_simi(vecteur_requete, n = 100, k = 5):
+    liste_scores_films = []
     for i, doc_embd in enumerate(doc_embedding):
-        
-        # alignement matériel (mac/windows)
-        doc_embd = doc_embd.to(query_embedding.device)
 
-        scores_morceaux = util.cos_sim(query_embedding,doc_embd)[0]
-        
+        doc_embd = doc_embd.to(vecteur_requete.device) # alignement matériel (mac/windows)
+        scores_morceaux = util.cos_sim(vecteur_requete,doc_embd)[0]
+
         vrai_k = min(k,len(scores_morceaux))
-
         meilleurs_scores = torch.topk(scores_morceaux,vrai_k).values
+        
+        score_global = meilleurs_scores.mean() * 0.5 + torch.max(scores_morceaux) * 0.5
 
-        #scores_final = torch.max(meilleurs_scores).item()
-        scores_final = meilleurs_scores.mean() * 0.5 + torch.max(scores_morceaux) * 0.5
+        id_film_courant = liste_ids_films[i]
+        liste_scores_films.append((id_film_courant,score_global))
 
-        vrai_doc_id = doc_ids[i]
-        resultat.append((vrai_doc_id,scores_final))
-    
-    resultat_trie = sorted(resultat,key=lambda x:x[1],reverse=True)
-    return resultat_trie[:n]
+    liste_scores_films_trie = sorted(liste_scores_films,key=lambda x:x[1],reverse=True)
+    return liste_scores_films_trie[:n]
 
-query = input("Write your phobie ... : ")
-nb_films_envoyer_a_user  = 5
-output = scores_simi(traitement_requete(query))
-print(f"TOP {nb_films_envoyer_a_user} : \n")
-for id,score in output[:nb_films_envoyer_a_user]: 
-    print(f"FILM : {docs[id]['title']} avec score : {score}\n")
+# ******************************************************************************** #
+# ****************** Étape 5 : Pseudo-Relevance Feedback (PRF) ******************* #
+# ******************************************************************************** #
+
+def pseudo_relevance_feedback(query_vector, top_results, doc_embeddings, liste_ids_films, alpha = 0.7, k =10):
+    doc_id_to_idx = {id : i for i, id in enumerate(liste_ids_films)}
+
+    pseudo_pertinents_id = [docID for docID, score in top_results[:k]]
+
+    if len(pseudo_pertinents_id) == 0:
+        return query_vector
+
+    vecteurs_films_pertinents = []
+    for docID in pseudo_pertinents_id:
+        idx = doc_id_to_idx[docID]
+        morceaux_film_pertinent = doc_embeddings[idx]
+
+        # alignement matériel (mac/windows)
+        morceaux_film_pertinent = morceaux_film_pertinent.to(query_vector.device)
+        
+        vecteur_moyen_film = torch.mean(morceaux_film_pertinent,dim=0)
+        vecteurs_films_pertinents.append(vecteur_moyen_film)
+
+    moyenne_pertinent = torch.mean(torch.stack(vecteurs_films_pertinents), dim = 0)
+    vecteur_requete_augmente = query_vector + alpha * moyenne_pertinent
+
+    return vecteur_requete_augmente
+
+# ******************************************************************************** #
+# ************************ Étape 6 : Exécution principale ************************ #
+# ******************************************************************************** #
+
+texte_requete_utilisateur = input("What are you afraid of ? ")
+res_recherche_init  = 5
+
+vect_requete = traitement_requete(texte_requete_utilisateur)
+top_res = scores_simi(vect_requete)
+
+vect_prf = pseudo_relevance_feedback(vect_requete, top_res, doc_embedding, liste_ids_films)
+res_finaux = scores_simi(vect_prf)
+
+print(f"Here are the top {res_recherche_init} movies that you should avoid : \n")
+for id,score in res_finaux[:res_recherche_init]: 
+    print(f"Movie : {dico_films[id]['title']} (Score : {score})\n")
 end = time.time()
 print(f"Temps d'exécution total du programme : {end - start}")

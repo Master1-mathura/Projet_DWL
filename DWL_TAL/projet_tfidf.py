@@ -2,7 +2,6 @@ import pandas as pd
 import time
 import math
 import numpy as np
-import string
 from nltk.corpus import stopwords
 from nltk import RegexpTokenizer
 from nltk.stem import WordNetLemmatizer
@@ -10,9 +9,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from nltk.corpus import wordnet as wn 
 from nltk.corpus import brown
 from nltk.tag import UnigramTagger
-print("IMPORT")
+
 # ******************************************************************************** #
-# ************************ Étape 0 : Nettoyage préalable ************************* #
+# ************************ Étape 1 : Prétraitement du texte ************************* #
 # ******************************************************************************** #
 
 # Nettoyage du script pour n'avoir que l'essentiel
@@ -33,17 +32,18 @@ def parsing_script(script,dico):
             continue
 
         if balise_scene :
-            mot_sans_punct = ''.join(c for c in mot if c not in string.punctuation)
-            if mot_sans_punct.lower() in dico.keys() : 
-                mot = f"{mot_sans_punct.lower()} {dico[mot_sans_punct.lower()]}"
+            mot_lower = mot.lower()
+            if mot_lower in dico.keys() : 
+                mot = mot_lower + " " + dico[mot_lower]
             scene_description.append(mot) 
     return " ".join(scene_description)
 
 def theme_dico(liste_theme):
     mot_a_theme = {}
     for theme in liste_theme : 
+        theme_lower = theme.lower()
         mot_virtuel = f"THEME_{theme.upper()}"
-        mot_a_theme[theme.lower()] = mot_virtuel
+        mot_a_theme[theme_lower] = mot_virtuel
         
         synset = wn.synsets(theme)[0]
         for hypo in synset.hyponyms():
@@ -61,7 +61,6 @@ df['text'] = df['text'].apply(lambda x: parsing_script(x,mot_a_theme))
 
 docs = df.set_index('doc_id').to_dict(orient='index')
 
-print("Doc créee !")
 # ******************************************************************************** #
 # ******************** Étape 1 : Création de l'index inversé ********************* #
 # ******************************************************************************** #
@@ -74,8 +73,6 @@ lemme = {}
 postings = {}
 tagger = UnigramTagger(brown.tagged_sents())
 
-print("Debut postings")
-tag_map = {'J': wn.ADJ, 'V': wn.VERB, 'R': wn.ADV}
 for filmID, data in docs.items():
     script = data["text"]
     tokens = script.split()
@@ -88,8 +85,7 @@ for filmID, data in docs.items():
             token_lower = mot.lower() 
             if token_lower not in stopwords_set:
                 if token_lower  not in lemme : 
-                    wn_tag = tag_map.get(tag[0].upper(), wn.NOUN) 
-                    lemme[token_lower] = lemmatizer.lemmatize(token_lower,pos = wn_tag)
+                    lemme[token_lower] = lemmatizer.lemmatize(token_lower)
                 t = lemme[token_lower]
             else : 
                 continue
@@ -103,33 +99,29 @@ for filmID, data in docs.items():
         else : 
             postings[t][filmID] +=1
 end_posting = time.time()
-print("Fin postings, donc posting crée ")
+
 # ******************************************************************************** #
 # ********************** Étape 2 : Calcul des scores TF-IDF ********************** #
 # ******************************************************************************** #
-print("TF-IDF")
+
 start = time.time()
 N = len(docs)
-
-tf_idf = {}
-
 # Calcul de l'IDF pour chaque terme du vocabulaire 
 idf_score = {terme : math.log((N) / len(postings[terme])) + 1 for terme in postings}
 # Création d'une liste des mots, elle doit être fixe pour comparer les vecteurs
 liste_terme = list(postings.keys())
 
 # Initialisation des vecteurs TF*IDF
-for filmID in docs :
-    tf_idf[filmID] = [0.0] * len(liste_terme)
+n_liste_terme = len(liste_terme)
+tf_idf = {filmID : [0.0] * n_liste_terme for filmID in docs}
 
 # Remplissage des vecteurs TF*IDF
+log10 = math.log10
 for i,terme in enumerate(postings):
     score_idf = idf_score[terme]
     for filmID,tf in postings[terme].items():
-        if filmID in tf_idf  : 
-            tf_idf[filmID][i] = (1 + math.log10(tf)) * score_idf
+        tf_idf[filmID][i] = (1 + log10(tf)) * score_idf
 end = time.time()
-print("TF-IDF Done")
 
 # ******************************************************************************** #
 # ********************** Étape 3 : Traitement de la requête ********************** #
@@ -138,19 +130,19 @@ print("TF-IDF Done")
 #Par default, c'est n = 5 et dico_theme = mot_a_theme, peut-etre faire la meme pour le parsing
 def traitement_requete(query, dico_theme = mot_a_theme):
     tokens = tokenizer.tokenize(query)
-    tags = tagger.tag(tokens)
     queryterms = []
-    for mot,tag in tags:
+    for mot in tokens:
         mot_lower = mot.lower()
+
+        if mot_lower not in stopwords_set:
+            lemme_mot = lemmatizer.lemmatize(mot_lower)
+            queryterms.append(lemme_mot)    
+
         if mot_lower in dico_theme.keys():
             queryterms.append(dico_theme[mot_lower])
-            queryterms.append(mot_lower)
-        if tag in ('NN', 'NNS', 'JJ', 'JJR', 'JJS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ') or tag is None:
-            if mot_lower not in stopwords_set:
-                lemme_mot = lemmatizer.lemmatize(mot_lower)
-                queryterms.append(lemme_mot)          
-            
-    print("Nouvelle requete : ", queryterms)
+            lemme_mot = lemmatizer.lemmatize(mot_lower)
+            queryterms.append(lemme_mot)
+
     # Création du vecteur de la requête
     vecteur_query = [0.0] * len(liste_terme)
     terme_index = {term : i for i,term in enumerate(liste_terme)}
@@ -158,8 +150,9 @@ def traitement_requete(query, dico_theme = mot_a_theme):
         if mot in postings : 
             index = terme_index[mot]
             tf = queryterms.count(mot)
-            vecteur_query[index] = (1 + math.log10(tf)) * idf_score[mot]
+            vecteur_query[index] = (1 + log10(tf)) * idf_score[mot]
     return vecteur_query
+
 # ******************************************************************************** #
 # ****************** Étape 4 : Calcul des scores de similarité ******************* #
 # ******************************************************************************** #
@@ -177,19 +170,40 @@ def scores_simi(vecteur_query, n = 5):
     # Tri pour avoir les 5 meilleurs scores -> les films à éviter à toçut prix
     pires_n_films = sorted(score_similarite.items(), key=lambda x: x[1], reverse = True)[:n]
 
-    res = []
+    liste_scores_films_trie = []
 
     # print("Vous devriez éviter le(s) film(s) : ")
     for (filmID, score) in pires_n_films:
-        res.append((filmID, score))
-    return res
+        liste_scores_films_trie.append((filmID, score))
+    return liste_scores_films_trie
 
-# query = input("Enter query : ")
-# result = scores_simi(traitement_requete(query))
-# for doc_id,score in result:
-#     titre = docs[doc_id]["title"]
-#     print(f"{titre} (Score de similarité : {score})")
-# print(f"Temps d'exécution du tf-idf: {end - start}")
-# print(f"Temps d'exécution des postings: {end_posting - start_posting}")
-# temps_total_end = time.time()
-# print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
+
+def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results, alpha=0.7, k = 10):
+
+    pseudo_pertinents_id = [docID for docID,_ in top_results[:k]]
+    if len(pseudo_pertinents_id) == 0:
+        return vecteur_requete
+
+    revelant_vectors = [np.array(tfidf_matrice[idx]) for idx in pseudo_pertinents_id]
+    moyenne_pertinent = np.mean(revelant_vectors,axis=0)
+
+   
+    augmented_query_vecteur = np.array(vecteur_requete) + alpha * moyenne_pertinent
+
+    return augmented_query_vecteur.tolist()
+
+
+texte_requete_utilisateur = input("What are you afraid of ? ")
+res_recherche_init  = 5
+
+vect_requete = traitement_requete(texte_requete_utilisateur)
+top_res = scores_simi(vect_requete)
+
+vect_prf = pseudo_relevance_feedback(tf_idf,vect_requete,top_res)
+res_finaux = scores_simi(vect_prf)
+
+print(f"Here are the top {res_recherche_init} movies that you should avoid : \n")
+for id,score in res_finaux[:res_recherche_init]:
+    print(f"Movie : {docs[id]['title']} (Score : {score})\n")
+temps_total_end = time.time()
+print(f"Temps d'exécution total du programme : {temps_total_end - temps_total}")
