@@ -11,7 +11,7 @@ from nltk.corpus import brown
 from nltk.tag import UnigramTagger
 
 # ******************************************************************************** #
-# ************************ Étape 1 : Prétraitement du texte ************************* #
+# ********************** Étape 1 : Prétraitement du texte ************************ #
 # ******************************************************************************** #
 
 # Nettoyage du script pour n'avoir que l'essentiel
@@ -81,7 +81,7 @@ for filmID, data in docs.items():
     for mot, tag in liste_postag:
         if mot.startswith("THEME_"):
             t = mot
-        elif tag not in ('NNP', 'NNPS','MD',None) :
+        elif tag not in ('NNP', 'NNPS') or tag is not None:
             token_lower = mot.lower() 
             if token_lower not in stopwords_set:
                 if token_lower  not in lemme : 
@@ -110,11 +110,11 @@ N = len(docs)
 idf_score = {terme : math.log((N) / len(postings[terme])) + 1 for terme in postings}
 # Création d'une liste des mots, elle doit être fixe pour comparer les vecteurs
 liste_terme = list(postings.keys())
+terme_index = {term : i for i,term in enumerate(liste_terme)}
 
 # Initialisation des vecteurs TF*IDF
 n_liste_terme = len(liste_terme)
 tf_idf = {filmID : [0.0] * n_liste_terme for filmID in docs}
-
 # Remplissage des vecteurs TF*IDF
 log10 = math.log10
 for i,terme in enumerate(postings):
@@ -143,9 +143,9 @@ def traitement_requete(query, dico_theme = mot_a_theme):
             queryterms.append(lemme_mot)
 
     vecteur_query = [0.0] * len(liste_terme)
-    terme_index = {term : i for i,term in enumerate(liste_terme)}
+    liste_terme_set = set(liste_terme)
     for mot in queryterms : 
-        if mot in postings : 
+        if mot in liste_terme_set : 
             index = terme_index[mot]
             tf = queryterms.count(mot)
             vecteur_query[index] = (1 + log10(tf)) * idf_score[mot]
@@ -167,12 +167,8 @@ def scores_simi(vecteur_query, n = 5):
 
     # Tri pour avoir les 5 meilleurs scores -> les films à éviter à toçut prix
     pires_n_films = sorted(score_similarite.items(), key=lambda x: x[1], reverse = True)[:n]
-
-    liste_scores_films_trie = []
-
-    for (filmID, score) in pires_n_films:
-        liste_scores_films_trie.append((filmID, score))
-    return liste_scores_films_trie
+    
+    return pires_n_films
 
 
 def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results, alpha=0.7, k = 10):
@@ -188,7 +184,6 @@ def pseudo_relevance_feedback(tfidf_matrice,vecteur_requete,top_results, alpha=0
     augmented_query_vecteur = np.array(vecteur_requete) + alpha * moyenne_pertinent
 
     return augmented_query_vecteur.tolist()
-
 
 texte_requete_utilisateur = input("What are you afraid of ? ")
 res_recherche_init  = 5
