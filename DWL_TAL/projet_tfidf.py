@@ -11,7 +11,7 @@ from nltk.corpus import brown
 from nltk.tag import UnigramTagger
 
 # ******************************************************************************** #
-# ********************** Étape 1 : Prétraitement du texte ************************ #
+# ************************ Étape 1 : Prétraitement du texte ************************* #
 # ******************************************************************************** #
 
 # Nettoyage du script pour n'avoir que l'essentiel
@@ -81,7 +81,7 @@ for filmID, data in docs.items():
     for mot, tag in liste_postag:
         if mot.startswith("THEME_"):
             t = mot
-        elif tag not in ('NNP', 'NNPS') or tag is not None:
+        elif tag not in ('NNP', 'NNPS'):
             token_lower = mot.lower() 
             if token_lower not in stopwords_set:
                 if token_lower  not in lemme : 

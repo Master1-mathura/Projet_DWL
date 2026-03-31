@@ -23,7 +23,7 @@ def load_qrels(file_path):
             pertinence = float(pertinence)
             if queryID not in dico_qrels:
                 dico_qrels[queryID] = []
-            dico_qrels[queryID].append((int(docID), pertinence))
+            dico_qrels[queryID].append((docID, pertinence))
     return dico_qrels
 
 chemin_fichier_qrels = "Dataset_Projet_TAL/collection_test/qrels.csv"
@@ -98,9 +98,14 @@ def eval_nDCG(liste_film_recuperer, liste_paires):
 # ************ Étape 3 : Boucle d'évaluation sur toutes les requêtes ************* #
 # ******************************************************************************** #
 
+ap_scores_prf = []
+rappel_scores_prf = []
+ndcg_scores_prf = []
+
 ap_scores = []
 rappel_scores = []
 ndcg_scores = []
+
 max_qrels = max(len(dico_qrels[q]) for q in dico_qrels)
 lim_affichage = projet_tfidf.res_recherche_init
 
@@ -123,6 +128,18 @@ for queryID in parse_queries.keys():
         titre = doc_film[doc_id]["title"]
         print(f"  - {titre} (Score : {score:.4f})")
 
+
+    ids_films_retrouves = [filmID for filmID, _ in res_init_test]
+    
+    rappel_courant = eval_rappel(ids_films_retrouves, ids_perti_attendus)
+    ap_courant = eval_AP(ids_films_retrouves, ids_perti_attendus)
+    ndcg_courant = eval_nDCG(ids_films_retrouves, donnees_perti_requete)
+    
+    rappel_scores.append(rappel_courant)
+    ap_scores.append(ap_courant)
+    ndcg_scores.append(ndcg_courant)
+
+
     vecteur_augmente = projet_tfidf.pseudo_relevance_feedback(projet_tfidf.tf_idf, vecteur_requete_test, res_init_test, alpha=0.7, k = 10)
     print("----------------------PRF-------------------------")
     res_prf_test = projet_tfidf.scores_simi(vecteur_augmente, n = max_qrels)
@@ -131,17 +148,33 @@ for queryID in parse_queries.keys():
         titre = doc_film[doc_id]["title"]
         print(f"  - {titre} (Score : {score:.4f})")
     
-
     ids_films_retrouves_prf = [filmID for filmID, _ in res_prf_test]
-    
-    rappel_courant = eval_rappel(ids_films_retrouves_prf, ids_perti_attendus)
-    ap_courant = eval_AP(ids_films_retrouves_prf, ids_perti_attendus)
-    ndcg_courant = eval_nDCG(ids_films_retrouves_prf, donnees_perti_requete)
 
-    rappel_scores.append(rappel_courant)
-    ap_scores.append(ap_courant)
-    ndcg_scores.append(ap_courant)
+
+    rappel_courant_prf = eval_rappel(ids_films_retrouves_prf, ids_perti_attendus)
+    ap_courant_prf = eval_AP(ids_films_retrouves_prf, ids_perti_attendus)
+    ndcg_courant_prf = eval_nDCG(ids_films_retrouves_prf, donnees_perti_requete)
+
+    rappel_scores_prf.append(rappel_courant_prf)
+    ap_scores_prf.append(ap_courant_prf)
+    ndcg_scores_prf.append(ndcg_courant_prf)
+
+
+
+print("\n" + "="*100)
+print("Scores des métriques sans PRF :")
+print("="*100)
+
 
 print("Avg. Recall: ", np.mean(rappel_scores))
 print("MAP: ", np.mean(ap_scores))
 print("Avg. nDCG: ", np.mean(ndcg_scores))
+
+print("\n" + "="*100)
+print("Scores des métriques avec PRF :")
+print("="*100)
+
+
+print("Avg. Recall: ", np.mean(rappel_scores_prf))
+print("MAP: ", np.mean(ap_scores_prf))
+print("Avg. nDCG: ", np.mean(ndcg_scores_prf))
