@@ -19,6 +19,7 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: watchlist_api
     volumes:
+      - db_data:/var/lib/mysql
       - ./app/donnees.sql:/docker-entrypoint-initdb.d/donnees.sql
 
   
@@ -30,4 +31,5 @@ services:
       - 8000:80
     depends_on:
       - application
-  
+volumes: 
+  db_data:
