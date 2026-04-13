@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS watchlist_api CHARACTER SET utf8mb4;
+
+USE watchlist_api;
+
+CREATE TABLE IF NOT EXISTS watchlist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    film_name VARCHAR(100) NOT NULL,
+    watched BOOLEAN DEFAULT FALSE
+);
