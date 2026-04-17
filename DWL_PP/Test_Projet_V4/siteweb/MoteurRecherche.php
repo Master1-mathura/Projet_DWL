@@ -3,13 +3,13 @@
 require_once "config/configuration.php";
 require_once "service/MovieService.php";
 
-$url = API_BASE_URL . "/search";
-
+$searchResults = [];
 
 if(isset($_POST["query"])){
     $query = $_POST["query"];
     $res = MovieService::searchMotor($query);
-    echo "<p>" . $res . "</p>";
+
+    $searchResults = json_decode($res, true); # on decode le json recu de flask
 }
 
 $liste = MovieService::getAll();
