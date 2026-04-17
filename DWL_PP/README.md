@@ -11,7 +11,7 @@ embeddings_films.pt (à la racine)
 3. Placer les fichiers au bon endroit
 Glissez ces deux fichiers dans le dossier data. Votre arborescence DOIT ressembler exactement à ça :
 
-Plaintext
+```text
 DWL_PP/
 └── app/
     ├── data/
@@ -20,3 +20,4 @@ DWL_PP/
     ├── app.py
     ├── search_moteur.py
     └── ...
+```
