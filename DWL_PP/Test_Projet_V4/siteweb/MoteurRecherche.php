@@ -12,7 +12,12 @@ if(isset($_POST["query"])){
     $searchResults = json_decode($res, true); # on decode le json recu de flask
 }
 
-$liste = MovieService::getAll();
+$data = json_decode(file_get_contents('php://input'), true);
+if (isset($data['film_ID'])) {
+    header('Content-Type: application/json');
+    echo  MovieService::getMovieData($data['film_ID']);
+    exit; // TRÈS IMPORTANT : on arrête tout ici !
+}
 require_once "view/affichage_Search.php"
 
 ?>

@@ -22,7 +22,7 @@ liste_ids_films = None
 def decouper_texte(texte, taille_morceau=200,chevauchement = 50):
     mots = texte.split()
     liste_morceaux = []
-    
+
     pas = taille_morceau - chevauchement
     for i in range(0, len(mots), pas):
         morceau = " ".join(mots[i : i + taille_morceau])
@@ -40,7 +40,7 @@ def parsing_script(script):
             continue
 
         if mot == "</scene_description>":
-            dans_balise_scene = False 
+            dans_balise_scene = False
             continue
 
         if dans_balise_scene :
@@ -68,13 +68,13 @@ def init_model():
     # ******************************************************************************** #
     if os.path.exists(sauvegarde):
         doc_embedding = torch.load(sauvegarde)
-    else : 
+    else :
         doc_embedding = []
         total_films = len(liste_textes_films)
         for i,film in enumerate(liste_textes_films):
             if len(film) == 0:
                 vecteurs_liste_morceaux = torch.zeros((1,384))
-            else : 
+            else :
                 vecteurs_liste_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
 
             doc_embedding.append(vecteurs_liste_morceaux)
@@ -98,7 +98,7 @@ def scores_simi(vecteur_requete, n = 100, k = 5):
 
         vrai_k = min(k,len(scores_morceaux))
         meilleurs_scores = torch.topk(scores_morceaux,vrai_k).values
-        
+
         score_global = meilleurs_scores.mean() * 0.5 + torch.max(scores_morceaux) * 0.5
 
         id_film_courant = liste_ids_films[i]
@@ -126,7 +126,7 @@ def pseudo_relevance_feedback(query_vector, top_results, doc_embeddings, liste_i
 
         # alignement matériel (mac/windows)
         morceaux_film_pertinent = morceaux_film_pertinent.to(query_vector.device)
-        
+
         vecteur_moyen_film = torch.mean(morceaux_film_pertinent,dim=0)
         vecteurs_films_pertinents.append(vecteur_moyen_film)
 
@@ -150,9 +150,9 @@ def rechercher(query):
     # ----- AJOUT POUR PP : on affiche plus les resultat par des print mais on les stocke et on les envoiçe à app.py
     resultats_pour_flask = []
 
-    for id, score in res_finaux[:res_recherche_init]: 
+    for id, score in res_finaux[:res_recherche_init]:
         resultats_pour_flask.append({
-            "id": id,
+            "id": dico_films[id]["imdbID"],
             "film_name": dico_films[id]['title'],
             "score": float(score) # On convertit le Tenseur PyTorch en chiffre standard pour le JSON
         })
