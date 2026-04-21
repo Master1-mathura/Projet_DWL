@@ -218,6 +218,24 @@
 
             openBox();
         }
+        async function ajouterWatchlist(event) {
+            event.preventDefault(); //Empeche le formulaire de recharger la page
+            const filmID = document.getElementById("modal-film-id").value;
+
+            const formData = new URLSearchParams(); //Les données pour la requête
+            formData.append('add_watchlist',filmID);
+            try {
+                await fetch('', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {'Content-Type' : 'application/x-www-form-urlencoded'}
+                });
+                alert("Film ajouté à la watchlist");
+            } catch(error){
+                console.error("Erreur lors de l'ajout :", error);
+                alert("Une erreur est survenue.");
+            }
+        }
     </script>
 </body>
 </html>

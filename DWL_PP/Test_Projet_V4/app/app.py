@@ -61,5 +61,12 @@ def get_metadata():
         return jsonify(data),200
     return jsonify({"erreur" : "Movie not found"}), 404
 
+
+@app.route('/ajout_watchlist',methods=['POST'])
+def ajout_watchlist():
+    data = request.get_json()
+    ouput = repository.add_movies(data)
+    return jsonify(ouput),201
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)
