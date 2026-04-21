@@ -1,0 +1,531 @@
+/* =========================================
+   VARIABLES & RESET
+   ========================================= */
+:root {
+    /* Couleurs basées sur ton logo (nuances de violet) */
+    --primary-color: #3f2257;
+    --primary-light: #bba4d6;
+    --accent-color: #7b58a3;
+    --bg-color: #0f0a18; /* Fond très sombre, presque noir/violet */
+    --surface-color: #1a1325;
+    --text-main: #f5f0ff;
+    --text-muted: #a494bc;
+    
+    --radius-lg: 16px;
+    --radius-md: 8px;
+    --transition: all 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =========================================
+   HEADER & LOGOS
+   ========================================= */
+.main-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+.main-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 15px rgba(187, 164, 214, 0.2));
+}
+
+h1 {
+    text-transform: uppercase;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: var(--primary-light);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* L'icône Watchlist placée en haut à droite du header */
+.watchlist-link {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+}
+
+.watchlist-icon {
+    width: 45px;
+    /* Transforme l'image noire en blanche et ajoute un glow violet */
+    filter: invert(1) drop-shadow(0 0 5px rgba(187, 164, 214, 0.5));
+    transition: var(--transition);
+}
+
+.watchlist-link:hover .watchlist-icon {
+    transform: scale(1.15) rotate(5deg);
+    filter: invert(1) drop-shadow(0 0 15px rgba(187, 164, 214, 0.8));
+}
+
+/* =========================================
+   SEARCH BAR
+   ========================================= */
+.container {
+    width: 100%;
+    max-width: 700px;
+    padding: 0 20px;
+}
+
+.search-form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 3rem;
+}
+
+.search-form label {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.search-group {
+    display: flex;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 50px;
+    overflow: hidden;
+    background: var(--surface-color);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.search-group input {
+    flex: 1;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    outline: none;
+}
+
+.search-group input::placeholder {
+    color: #5a4b73;
+}
+
+.search-group button {
+    padding: 0 30px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-group button:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-light));
+    box-shadow: 0 0 20px rgba(123, 88, 163, 0.4);
+}
+
+/* =========================================
+   RESULTS
+   ========================================= */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.result-row {
+    width: 100%;
+}
+
+.open-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+}
+
+.open-btn:hover {
+    transform: translateY(-2px);
+}
+
+.color-bar {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: var(--radius-md);
+    color: white; /* Texte blanc pour contraster avec les couleurs PHP */
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    /* On ajoute une ombre au texte au cas où la couleur PHP est très claire */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.film-title {
+    font-size: 1.1rem;
+    flex-grow: 1;
+}
+
+.film-score {
+    font-size: 0.85em;
+    margin: 0 15px;
+    opacity: 0.9;
+}
+
+.film-id {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.no-results {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 2rem;
+}
+
+/* =========================================
+   MODAL (PREMIUM CARD STYLE)
+   ========================================= */
+.box-overlay {
+    display: none; /* Flex déclenché par JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 6, 18, 0.85); /* Un peu plus sombre */
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.premium-modal {
+    /* Un fond dégradé qui rappelle tes couleurs et le style de l'image 2 */
+    background: linear-gradient(135deg, #1a1325 0%, #0f0a18 100%);
+    border: 1px solid rgba(187, 164, 214, 0.15);
+    border-radius: 24px;
+    width: 90%;
+    max-width: 850px; /* Beaucoup plus large pour le mode 2 colonnes */
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+    animation: modalFadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden; /* Pour que l'affiche respecte les bords arrondis */
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    color: var(--text-main);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.close-btn:hover {
+    background: var(--primary-color);
+    transform: rotate(90deg);
+}
+
+/* --- Layout en 2 colonnes --- */
+.modal-layout {
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-poster-side {
+    width: 40%;
+    background: #000; /* Fond noir au cas où l'image ne couvre pas tout */
+    display: flex;
+}
+
+/* On force l'image générée par JS à prendre tout l'espace de sa colonne */
+.modal-poster-side img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Coupe un peu l'image si besoin pour remplir l'espace, effet très cinématographique */
+    box-shadow: 5px 0 25px rgba(0,0,0,0.5); /* Ombre sur le texte à droite */
+}
+
+.modal-info-side {
+    width: 60%;
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* --- Typographie et détails --- */
+.modal-badge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--primary-light);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+#box-title {
+    font-size: 2.2rem;
+    line-height: 1.1;
+    margin-bottom: 15px;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* =========================================
+   PROGRESS BAR RATING
+   ========================================= */
+.rating-bar-container {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.rating-track {
+    position: relative;
+    width: 100%;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.6); /* Le fond sombre de la jauge */
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Fine bordure comme sur Jumanji */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); /* Ombre interne pour l'effet de creux */
+}
+
+.rating-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%; /* Rempli par le JS */
+    transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1); /* Animation fluide de remplissage */
+    z-index: 1;
+}
+
+/* Couleurs de la jauge (un peu transparentes pour le style) */
+.fill-high { 
+    background: linear-gradient(90deg, rgba(46,204,113,0.2) 0%, rgba(46,204,113,0.7) 100%); 
+}
+.fill-medium { 
+    background: linear-gradient(90deg, rgba(241,196,15,0.2) 0%, rgba(241,196,15,0.7) 100%); 
+}
+.fill-low { 
+    background: linear-gradient(90deg, rgba(231,76,60,0.2) 0%, rgba(231,76,60,0.7) 100%); 
+}
+
+.score-text {
+    position: relative;
+    z-index: 2; /* Pour rester au-dessus de la jauge colorée */
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8)
+
+}
+#box-synposis {
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+    font-size: 1rem;
+    text-align: left; /* Plus pro que le texte justifié sur le web */
+}
+
+/* --- Bouton d'action --- */
+.premium-add-btn {
+    background: transparent;
+    color: var(--text-main);
+    border: 2px solid var(--primary-light);
+    padding: 12px 25px;
+    border-radius: 8px; /* Plus carré, comme le bouton "Wish List" de Fate */
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+}
+
+.premium-add-btn .icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--primary-light);
+    color: var(--bg-color);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-weight: bold;
+    transition: var(--transition);
+}
+
+.premium-add-btn:hover {
+    background: rgba(187, 164, 214, 0.1);
+    border-color: white;
+    color: white;
+}
+
+.premium-add-btn:hover .icon {
+    background: white;
+}
+
+/* --- Responsive pour mobile --- */
+@media (max-width: 768px) {
+    .modal-layout {
+        flex-direction: column; /* On empile sur petit écran */
+    }
+    
+    .modal-poster-side {
+        width: 100%;
+        height: 250px; /* Hauteur fixe pour l'image sur mobile */
+    }
+    
+    .modal-poster-side img {
+        object-position: top; /* Garde le haut de l'affiche visible */
+    }
+    
+    .modal-info-side {
+        width: 100%;
+        padding: 30px 20px;
+    }
+    
+    #box-title {
+        font-size: 1.8rem;
+    }
+}
+
+
+/* =========================================
+   FEAR LOADER ANIMATION
+   ========================================= */
+#fear-loader {
+    display: none; /* Caché par défaut, géré par JS */
+    z-index: 2000; /* Toujours au-dessus de tout */
+    flex-direction: column;
+}
+
+.loader-content {
+    text-align: center;
+}
+
+.loader-text {
+    color: var(--primary-light);
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    animation: pulseText 1.5s infinite alternate;
+}
+
+@keyframes pulseText {
+    from { opacity: 0.6; text-shadow: 0 0 5px rgba(187, 164, 214, 0.2); }
+    to { opacity: 1; text-shadow: 0 0 15px rgba(187, 164, 214, 0.8); }
+}
+
+.loader-posters {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.fear-poster {
+    width: 90px;
+    height: 135px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    /* Par défaut, ils sont sombres et en noir et blanc */
+    opacity: 0.3;
+    filter: grayscale(100%);
+    transform: scale(1);
+    /* L'animation dure 2.5s et tourne en boucle */
+    animation: fearHighlight 2.5s infinite;
+}
+
+/* On décale le début de l'animation pour chaque poster pour créer une "vague" */
+.fear-poster:nth-child(1) { animation-delay: 0s; }
+.fear-poster:nth-child(2) { animation-delay: 0.5s; }
+.fear-poster:nth-child(3) { animation-delay: 1s; }
+.fear-poster:nth-child(4) { animation-delay: 1.5s; }
+.fear-poster:nth-child(5) { animation-delay: 2s; }
+
+@keyframes fearHighlight {
+    0%, 100% { 
+        opacity: 0.3; 
+        filter: grayscale(100%); 
+        transform: scale(1); 
+        box-shadow: none; 
+    }
+    10%, 30% { 
+        /* C'est l'équivalent du "hover" : couleur, lumière et agrandissement */
+        opacity: 1; 
+        filter: grayscale(0%); 
+        transform: scale(1.15) translateY(-10px); 
+        box-shadow: 0 15px 25px rgba(123, 88, 163, 0.6);  /*TESST*/
+    }
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 600px) {
+    .watchlist-link {
+        position: static;
+        transform: none;
+        margin-top: 10px;
+    }
+    .search-group {
+        flex-direction: column;
+        border-radius: var(--radius-md);
+    }
+    .search-group button {
+        padding: 15px;
+    }
+    .color-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+    .film-score {
+        margin: 5px 0;
+    }
+}
