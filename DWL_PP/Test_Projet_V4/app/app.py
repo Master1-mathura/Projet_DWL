@@ -4,48 +4,46 @@ import repository
 import search_moteur
 
 app = Flask(__name__)
+
 TMDB_KEY = "b78f8df42770d71ac2d434fc023adf18"
+
 search_moteur.init_model()
 
 @app.route('/')
 def home():
     return "WELCOME TO DON'T WATCHLIST"
 
-@app.route('/search',methods=['POST'])
+@app.route('/search',methods=['GET'])
 def searchMovie():
     # ----- AJOUT POUR PP :
     # on récupère la query envoyée par le PHP
-    data = request.get_json()
-    user_query = data.get('query', '')
+    user_query = request.args.get('q', '')
+
     if not user_query:
-        return jsonify([]), 200
-    
+        return jsonify({"results": []}), 200
+
     # stockage de score pour donner la couleur de l'étiquette
     resultats = search_moteur.rechercher(user_query)
 
     resultats_finaux = []
     for film in resultats:
-        score = film['score']        
+        score = film['score']
         if score > 0.6:
-            film['color'] = 'red'
+            film['color'] = '#9b2c3b'
         elif score > 0.3:
-            film['color'] = 'orange'
+            film['color'] = '#b87322'
         else:
-            film['color'] = 'green'
+            film['color'] = '#2e7d52'
         resultats_finaux.append(film)
     return jsonify(resultats_finaux), 200 #on envoie au php
 
-@app.route('/total_watchlist', methods=['GET'])
-def getWatchlist():
-    watchlist = repository.get_all()
-    return jsonify(watchlist),200
-@app.route('/get_metadata',methods=['POST'])
-def get_metadata():
-    data = request.get_json()
-    imdbID = data.get('film_ID')
 
+@app.route('/movies/<string:imdbID>',methods=['GET'])
+def get_metadata(imdbID):
     url = f"https://api.themoviedb.org/3/find/{imdbID}?api_key={TMDB_KEY}&external_source=imdb_id"
     response = requests.get(url)
+    if response.status_code != 200:
+        return jsonify({"error": "TMDB error"}), 502
     tmbd_data = response.json()
 
     if tmbd_data.get('movie_results'):
@@ -62,11 +60,17 @@ def get_metadata():
     return jsonify({"erreur" : "Movie not found"}), 404
 
 
-@app.route('/ajout_watchlist',methods=['POST'])
+@app.route('/watchlist', methods=['GET'])
+def getWatchlist():
+    watchlist = repository.get_all()
+    return jsonify(watchlist),200
+
+@app.route('/watchlist',methods=['POST'])
 def ajout_watchlist():
     data = request.get_json()
-    ouput = repository.add_movies(data)
-    return jsonify(ouput),201
+    output = repository.add_movies(data)
+    return jsonify(output),201
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

@@ -6,6 +6,6 @@ $url = API_BASE_URL . "/";
 
 $response = file_get_contents($url);
 
-$watchlist = MovieService::getAll();
+$watchlist = MovieService::getWatchlist();
 require_once "view/affichage_DWL.php";
 ?>

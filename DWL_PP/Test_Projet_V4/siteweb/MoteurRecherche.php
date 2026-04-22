@@ -5,8 +5,8 @@ require_once "service/MovieService.php";
 
 $searchResults = [];
 
-if(isset($_POST["query"])){
-    $query = $_POST["query"];
+if(isset($_GET["requete"])){
+    $query = $_GET["requete"];
     $res = MovieService::searchMotor($query);
 
     $searchResults = json_decode($res, true); # on decode le json recu de flask

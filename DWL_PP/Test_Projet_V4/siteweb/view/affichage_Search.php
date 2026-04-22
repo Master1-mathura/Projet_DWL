@@ -15,10 +15,10 @@
         </a>
     </header>
     <main class="container">
-        <form method = "post" class="search-form">
+        <form method = "get" class="search-form">
             <label for="query">What are you afraid of ?</label>
             <div class="search-group">
-                <input type="text" id="query" name="query" autocomplete="off" required>
+               <input type="text" id="query" name="requete" autocomplete="off" required>
                 <button type="submit">Search</button>
             </div>
         </form>
