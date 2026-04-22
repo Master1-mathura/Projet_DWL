@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="assets/css/search.css">
+        <link rel="stylesheet" href="assets/css/DWL.css">
         <title>Don't WatchList</title>
     </head>
     <body>
@@ -67,10 +67,8 @@
                 const title = cardElement.getAttribute('data-title');
                 const state = cardElement.getAttribute('data-state');
                 const bgUrl = cardElement.getAttribute('data-bg');
-
+                console.log(bgUrl);
                 document.getElementById('active-title').innerText = title;
-                document.getElementById('active-state').innerText = state;
-                document.getElementById('movie_id_input').value = id;
                 const bgLayer = document.getElementById('bg-layer');
                 bgLayer.style.opacity = 0; 
                 

@@ -1,0 +1,307 @@
+/* =========================================
+   VARIABLES & RESET (Cohérence avec Search)
+   ========================================= */
+:root {
+    --primary-color: #3f2257;
+    --primary-light: #bba4d6;
+    --accent-color: #7b58a3;
+    --bg-color: #0f0a18;
+    --surface-color: #1a1325;
+    --text-main: #f5f0ff;
+    --text-muted: #a494bc;
+    
+    --radius-lg: 16px;
+    --radius-md: 8px;
+    --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden; /* Empêche le scroll de la page entière, effet "Application" */
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   ARRIÈRE-PLAN DYNAMIQUE (BACKGROUND)
+   ========================================= */
+#bg-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: top center;
+    z-index: -2;
+    transition: opacity 0.4s ease-in-out;
+}
+
+/* Le dégradé superposé pour lire le texte à gauche */
+#bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(90deg, rgba(15, 10, 24, 1) 0%, rgba(15, 10, 24, 0.8) 40%, rgba(15, 10, 24, 0.2) 100%);
+    z-index: -1;
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+.dwl-header {
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.back-link {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.back-link:hover {
+    color: white;
+    transform: translateX(-5px);
+    text-shadow: 0 0 10px rgba(187, 164, 214, 0.5);
+}
+
+.dwl-header h1 {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* =========================================
+   LAYOUT PRINCIPAL (Basé sur ton croquis)
+   ========================================= */
+.app-content {
+    position: relative;
+    flex: 1;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* SECTION GAUCHE : INFOS DU FILM ACTIF */
+.active-info-section {
+    position: absolute;
+    top: 15%;
+    left: 4rem;
+    width: 45%;
+    max-width: 600px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.active-badge {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--primary-light);
+    text-transform: uppercase;
+}
+
+#active-title {
+    font-size: 4.5rem;
+    line-height: 1;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    transition: var(--transition);
+}
+
+#active-synopsis {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    padding: 15px 35px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-light));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(123, 88, 163, 0.5);
+}
+
+/* SECTION DROITE / BAS : CARROUSEL */
+.dwl-container {
+    position: absolute;
+    bottom: 3rem;
+    right: 0;
+    width: 55%;
+    padding-left: 2rem;
+    z-index: 10;
+}
+
+.section-title {
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: var(--primary-light);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+/* Le conteneur du carrousel */
+.movie-layout {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px 0 30px 0;
+    scroll-behavior: smooth;
+    /* Masquer la scrollbar pour un look propre */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+}
+
+.movie-layout::-webkit-scrollbar {
+    display: none;
+}
+
+/* Les affiches dans le carrousel */
+.movie-card {
+    flex: 0 0 160px; /* Largeur fixe de l'affiche */
+    height: 240px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+    opacity: 0.5; /* Assombri par défaut */
+    transform: scale(0.95);
+    border: 2px solid transparent;
+}
+
+.movie-card.active, 
+.movie-card:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    border-color: var(--primary-light);
+    box-shadow: 0 15px 35px rgba(123, 88, 163, 0.4);
+}
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.movie-card:hover .movie-poster {
+    transform: scale(1.1); /* Léger zoom au survol */
+}
+
+/* On cache le h2 original de la boucle PHP puisqu'il s'affiche en gros à gauche */
+.movie-info {
+    display: none; 
+}
+
+/* =========================================
+   CARROUSEL NAVIGATION (Flèches & Compteur)
+   ========================================= */
+.carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.carousel-nav-btn {
+    position: absolute;
+    z-index: 20;
+    background: rgba(26, 19, 37, 0.85); /* Fond sombre violet transparent */
+    border: 1px solid var(--primary-light);
+    color: var(--primary-light);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(187, 164, 214, 0.6);
+}
+
+.left-btn {
+    left: -15px; /* Déborde légèrement à gauche */
+}
+
+.right-btn {
+    right: 15px; /* Déborde légèrement à droite */
+}
+
+/* On ajuste le padding du carrousel pour ne pas que les posters passent sous les flèches */
+.movie-layout {
+    padding: 20px 40px 30px 40px; 
+    width: 100%;
+    /* Le reste de tes propriétés .movie-layout reste identique */
+}
+
+#carousel-counter {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    letter-spacing: 3px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    font-family: monospace; /* Donne un effet de compteur digital sympa */
+}
