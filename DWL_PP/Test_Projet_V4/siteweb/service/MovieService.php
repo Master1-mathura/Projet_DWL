@@ -2,8 +2,6 @@
 
 class MovieService
 {
-
-
     public static function getAll()
     {
         $url = API_BASE_URL . "/total_watchlist";
@@ -11,7 +9,8 @@ class MovieService
         return json_decode($response, true);
     }
 
-    public static function getMovieData($filmID){
+    public static function getMovieData($filmID)
+    {
         $url = API_BASE_URL . "/get_metadata";
         $content = json_encode(["film_ID" => $filmID]);
         $options = [
@@ -27,7 +26,8 @@ class MovieService
         return $response;
     }
 
-    public static function addWatchlist($metadata){
+    public static function addWatchlist($metadata)
+    {
         $url = API_BASE_URL . "/ajout_watchlist";
         $content = $metadata;
         $options = [
@@ -43,7 +43,8 @@ class MovieService
         return $response;
 
     }
-    public static function searchMotor($query){
+    public static function searchMotor($query)
+    {
         $url = API_BASE_URL . "/search";
         $data_to_send = ["query" => $query];
         $content = json_encode($data_to_send);

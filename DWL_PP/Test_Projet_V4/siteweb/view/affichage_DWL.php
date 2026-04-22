@@ -12,20 +12,14 @@
 <section>
     <h2>WATCHLIST</h2>
     <ul>
-        <?php $etiquette = "RED"; // ou "BLUE", "gold", "#ff00ff"... ?>
-        <li class = "movie_box" style="background-color: color-mix(in srgb, <?php echo strtolower($etiquette); ?> 40%, transparent);">
-            <img src="https://m.media-amazon.com/images/M/MV5BNThiZjA3MjItZGY5Ni00ZmJhLWEwN2EtOTBlYTA4Y2E0M2ZmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" 
-                    alt="Poster de Spider-Man : Across the Spider-Verse" 
-                    width=150>
-            
-            <div>
-                <h3>Spider-Man : Across the Spider-Verse</h3>
-                <p>
-                    <strong>ID :</strong> <code>tt9362722</code><br>
-                    <strong>Query KeyWord :</strong> <mark>Afraid Spider</mark>
-                    <strong>Etiquette :</strong> <?php echo $etiquette ?>
-                </p>
-            </div>
+        <li class = "movie_box">
+            <?php foreach ($watchlist as $movie) :?>
+                <li> 
+                    <button class="open-btn" onclick="showDetails('<?= addslashes($movie['id']) ?>')">
+                        <?= htmlspecialchars($movie['id']) ?> (<?= $movie['film_name']?>)
+                    </button>
+                </li>
+            <?php endforeach; ?>
         </li>
     </ul>
 </section>
