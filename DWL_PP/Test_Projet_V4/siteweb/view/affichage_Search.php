@@ -37,7 +37,7 @@
                     </div>
                 <?php endforeach; ?>
             <?php elseif (isset($_POST["query"])) : ?>
-                <p class="no-results">No movies founded.</p>
+                <p class="no-results">No movies found.</p>
             <?php endif; ?>
         </div>
     </main>

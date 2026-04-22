@@ -18,9 +18,9 @@
 
         <div class="app-content">
             <section class="active-info-section">
-                <span class="active-badge">Sélection en cours</span>
-                <h1 id="active-title">Chargement...</h1>
-                <p id="active-synopsis">Sélectionnez un film dans votre Watchlist pour en voir les détails.</p>
+                <span class="active-badge">Search in progress</span>
+                <h1 id="active-title">Loading...</h1>
+                <p id="active-synopsis">Select a film from your Watchlist to see its details.</p>
             </section>
 
             <main class="dwl-container">
