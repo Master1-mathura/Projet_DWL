@@ -48,7 +48,8 @@ L'application Flask (tournant sur le port `4000`) expose les routes suivantes po
 | `/movies/<imdbID>` | `GET` | Reçoit un identifiant IMDB, effectue une requête vers l'API TMDB, et reformate les données pour renvoyer un objet JSON propre (titre, synopsis, poster, background, note globale). |
 | `/watchlist` | `GET` | Interroge la base de données et renvoie tous les films enregistrés. |
 | `/watchlist` | `POST` | Reçoit les métadonnées d'un film depuis le front et l'ajoute à la base de données via le repository. |
-
+| `/watchlist/<imdbID>` | `DELETE` | Reçoit un identifiant IMDB et supprime le film correspondant de la base de données. |
+| `/watchlist/<imdbID>` | `PUT` | Reçoit un identifiant IMDB et une charge utile (payload) contenant le nouvel état du film (ex: "Survécu", "Abandon"), puis met à jour la base de données. |
 ---
 
 ## Persistance des Données
@@ -57,7 +58,7 @@ La gestion de la base de données MySQL est centralisée et sécurisée :
 
 * **Structure (`donnees.sql`)** : Une table `watchlist` stockant l'ID, le nom du film, les liens vers les images (poster et background) et l'état de visionnage (défini par défaut sur "En Attente" lors de l'insertion).
 * **Variables d'environnement (`config.py`)** : Les identifiants de connexion s'adaptent automatiquement à l'environnement (récupération des variables `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` définies par Docker, avec une valeur de repli pour le développement local).
-* **Repository Pattern (`repository.py`)** : Les fonctions `get_all()` et `add_movies()` encapsulent les requêtes SQL, séparant ainsi la logique base de données des contrôleurs Flask.
+* **Repository Pattern (`repository.py`)** : Les fonctions `get_all()` et `add_movies()` `delete_movie()`, et `update_movie_state()` encapsulent les requêtes SQL, séparant ainsi la logique base de données des contrôleurs Flask.
 
 ---
 

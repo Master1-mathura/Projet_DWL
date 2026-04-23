@@ -41,6 +41,13 @@ Les films sont affichés via un carrousel horizontal. L'utilisateur peut navigue
 ### 2. Arrière-plan Dynamique
 Une fonctionnalité clé de l'immersion est la gestion de l'arrière-plan. Lorsqu'un film est sélectionné dans le carrousel, JavaScript intercepte l'événement et met à jour dynamiquement le `background-image` de la page avec l'image de fond (backdrop) récupérée via TMDB, le tout couplé à une transition CSS fluide.
 
+### 3. Gestion des films
+Directement depuis l'interface de la Watchlist, l'utilisateur peut interagir avec le film sélectionné :
+
+- Mise à jour de l'état : L'utilisateur peut modifier le statut de visionnage d'un film via un menu déroulant ("En Attente", "Survécu", "Abandon"). Le frontend envoie alors une requête HTTP PUT via le proxy PHP.
+
+- Suppression : L'utilisateur peut retirer définitivement un film de sa liste, ce qui déclenche une requête HTTP DELETE.
+
 ---
 
 ## Communication avec l'API (`MovieService.php`)
