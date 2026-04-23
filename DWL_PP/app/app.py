@@ -71,6 +71,14 @@ def ajout_watchlist():
     output = repository.add_movies(data)
     return jsonify(output),201
 
+@app.route('/watchlist/<string:imdbID>',methods=['DELETE'])
+def deleteMovie(imdbID):
+    movie = repository.get_movie_by_id(imdbID)
+    if not movie:
+        return jsonify({"Movie not found in watchlist."})
+    repository.delete_movie(imdbID)
+    return jsonify(movie), 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

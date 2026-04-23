@@ -21,6 +21,14 @@
                 <span class="active-badge">Search in progress</span>
                 <h1 id="active-title">Loading...</h1>
                 <p id="active-synopsis">Select a film from your Watchlist to see its details.</p>
+                <div class="action-buttons">
+                    <form method="POST" action="DWL.php">
+                        <input type="hidden" id="delete-film-id" name="delete_id" value="">
+                        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                            Remove from Watchlist
+                        </button>
+                    </form>
+                </div>
             </section>
 
             <main class="dwl-container">
@@ -67,7 +75,7 @@
                 const title = cardElement.getAttribute('data-title');
                 const state = cardElement.getAttribute('data-state');
                 const bgUrl = cardElement.getAttribute('data-bg');
-                console.log(bgUrl);
+                document.getElementById('delete-film-id').value = id;
                 document.getElementById('active-title').innerText = title;
                 const bgLayer = document.getElementById('bg-layer');
                 bgLayer.style.opacity = 0; 

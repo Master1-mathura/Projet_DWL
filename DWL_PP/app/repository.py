@@ -23,3 +23,24 @@ def add_movies(data):
     conn.close()
 
     return "Succès : Le film a été ajoute dans votre watchlist"
+
+
+def get_movie_by_id(imdbID):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM watchlist WHERE id = %s", (imdbID,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result
+
+
+def delete_movie(imdbID):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM watchlist WHERE id = %s", (imdbID,))
+    conn.commit()
+    rows_affected = cursor.rowcount
+    cursor.close()
+    conn.close()
+    return rows_affected > 0 

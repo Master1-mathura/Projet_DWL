@@ -36,5 +36,18 @@ class MovieService
         $response = file_get_contents($url, true);
         return $response;
     }
+
+    public static function deleteMovieWL($filmID){
+        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID;
+        $options = [
+            "http" => [
+                "method" => "DELETE",
+                "header" => "Content-Type: application/json",
+            ]
+        ];
+        $context = stream_context_create($options);
+        $response = file_get_contents($url, false, $context);
+        return $response;
+    }
 }
 ?>
