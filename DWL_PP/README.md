@@ -36,7 +36,7 @@ Le modèle d'IA a besoin de fichiers de données volumineux pour fonctionner. Co
 
 Dans le dossier app, créez un dossier nommé data s'il n'existe pas déjà.
 
-Allez sur https://drive.google.com/drive/folders/19ti2-82yTjm8DlCH-d22emAAJSQcunXa?usp=sharing et téléchargez le dossiers contenant ces deux fichiers exacts :
+Allez sur https://drive.google.com/drive/folders/19ti2-82yTjm8DlCH-d22emAAJSQcunXa?usp=sharing et téléchargez le dossier contenant ces deux fichiers exacts :
 
 - corpus.json (situé dans Dataset_Projet_TAL/collection_test/)
 - embeddings_films.pt (situé à la racine)
