@@ -31,7 +31,7 @@ Pour éviter de recharger la page à chaque interaction, nous avons implémenté
 
 ---
 
-## 🎬 La Watchlist (`DWL.php`)
+## La Watchlist (`DWL.php`)
 
 Cette page affiche les films sauvegardés par l'utilisateur dans une interface très visuelle, inspirée des plateformes de streaming modernes.
 
