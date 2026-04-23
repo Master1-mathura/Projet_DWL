@@ -79,6 +79,18 @@ def deleteMovie(imdbID):
     repository.delete_movie(imdbID)
     return jsonify(movie), 200
 
+@app.route('/watchlist/<string:imdbID>', methods=['PUT'])
+def updateMovie(imdbID):
+    data = request.get_json()
+    nv_etat = data.get('etat')
+    if not nv_etat:
+        return jsonify({"No given tag."}), 400
+    movie = repository.get_movie_by_id(imdbID)
+    if not movie:
+        return jsonify({"No movies found."}), 404
+    repository.update_movie_state(imdbID, nv_etat)
+    return jsonify({"erreur": "Updated successfully", "etat": nv_etat}), 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

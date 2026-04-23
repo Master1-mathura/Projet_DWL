@@ -49,5 +49,20 @@ class MovieService
         $response = file_get_contents($url, false, $context);
         return $response;
     }
+
+    public static function updateEtat($filmID, $nv_etat){
+        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID;
+        $data = json_encode(["etat" => $nv_etat]);
+        
+        $options = [
+            "http" => [
+                "method" => "PUT",
+                "header" => "Content-Type: application/json",
+                "content" => $data
+            ]
+        ];
+        $context = stream_context_create($options);
+        return @file_get_contents($url, false, $context);
+    }
 }
 ?>

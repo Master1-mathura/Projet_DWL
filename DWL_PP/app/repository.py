@@ -43,4 +43,14 @@ def delete_movie(imdbID):
     rows_affected = cursor.rowcount
     cursor.close()
     conn.close()
-    return rows_affected > 0 
+    return rows_affected > 0
+
+def update_movie_state(imdbID, nv_etat):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE watchlist SET etat = %s WHERE id = %s", (nv_etat, imdbID))
+    conn.commit()
+    rows_affected = cursor.rowcount
+    cursor.close()
+    conn.close()
+    return rows_affected > 0

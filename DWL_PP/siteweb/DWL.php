@@ -9,6 +9,11 @@ if (isset($_POST["delete_id"])) {
     exit;
 }
 
+if (isset($_POST["update_id"]) && isset($_POST["nv_etat"]) && !empty($_POST["update_id"])) {
+    MovieService::updateEtat($_POST["update_id"], $_POST["nv_etat"]);
+    header("Location: DWL.php");
+    exit;
+}
 
 $url = API_BASE_URL . "/";
 

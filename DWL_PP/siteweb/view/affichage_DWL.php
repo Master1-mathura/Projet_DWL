@@ -28,6 +28,17 @@
                             Remove from Watchlist
                         </button>
                     </form>
+                    <form method="POST" action="DWL.php" style="display:flex; gap:10px;">
+                        <input type="hidden" id="update-film-id" name="update_id" value="">
+                        <select name="nv_etat" id="update-state-select" style="padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                            <option value="En Attente" style="color: black;">En Attente</option>
+                            <option value="Survécu" style="color: black;">Survécu</option>
+                            <option value="Abandon" style="color: black;">Abandon</option>
+                        </select>
+                        <button type="submit" class="btn-primary">
+                            Update
+                        </button>
+                    </form>
                 </div>
             </section>
 
@@ -76,6 +87,8 @@
                 const state = cardElement.getAttribute('data-state');
                 const bgUrl = cardElement.getAttribute('data-bg');
                 document.getElementById('delete-film-id').value = id;
+                document.getElementById('update-film-id').value = id;
+                document.getElementById('update-state-select').value = state;
                 document.getElementById('active-title').innerText = title;
                 const bgLayer = document.getElementById('bg-layer');
                 bgLayer.style.opacity = 0; 
