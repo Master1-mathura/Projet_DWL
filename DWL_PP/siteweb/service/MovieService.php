@@ -5,7 +5,7 @@ class MovieService
     public static function searchMotor($query){
         $url = API_BASE_URL . "/search?q=" . urlencode($query);
         $response = file_get_contents($url, true);
-        return $response;
+        return json_decode($response, true);
     }
 
     public static function getWatchlist()
@@ -17,7 +17,7 @@ class MovieService
 
     public static function addWatchlist($metadata){
         $url = API_BASE_URL . "/watchlist";
-        $content = $metadata;
+        $content = json_encode($metadata);
         $options = [
             "http" => [
                 "method" => "POST",
@@ -27,14 +27,13 @@ class MovieService
         ];
         $context = stream_context_create($options);
         $response = file_get_contents($url, false, $context);
-
-        return $response;
+        return json_decode($response, true);
 
     }
     public static function getMovieData($filmID){
         $url = API_BASE_URL . "/movies"  . "/" . $filmID;
         $response = file_get_contents($url, true);
-        return $response;
+        return json_decode($response, true);
     }
 
     public static function deleteMovieWL($filmID){
@@ -46,8 +45,8 @@ class MovieService
             ]
         ];
         $context = stream_context_create($options);
-        $response = file_get_contents($url, false, $context);
-        return $response;
+        $response = @file_get_contents($url, false, $context);
+        return json_decode($response, true);
     }
 
     public static function updateEtat($filmID, $nv_etat){
@@ -62,7 +61,8 @@ class MovieService
             ]
         ];
         $context = stream_context_create($options);
-        return @file_get_contents($url, false, $context);
+        $response = file_get_contents($url, false, $context);
+        return json_decode($response, true);
     }
 }
 ?>
