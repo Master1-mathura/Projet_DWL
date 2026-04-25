@@ -71,3 +71,18 @@ def creation_user(data):
     cursor.close()
     conn.close()
     return 1
+
+def connexion(data):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id, username FROM users WHERE username = %s AND mdp = %s", (data["username"],data["password"]))
+    verification = cursor.fetchone()
+    if verification is None:
+        cursor.close()
+        conn.close()
+        return None
+
+    cursor.close()
+    conn.close()
+    return verification

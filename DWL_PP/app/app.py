@@ -99,5 +99,12 @@ def creation_user():
         return jsonify({"error" : "Ce nom utilisateur existe déja, veuillez choisir autre"}),409
     return jsonify({"message" : "Votre compte a été creer"}), 201
 
+@app.route('/connexion',methods=['POST'])
+def connexion():
+    data = request.get_json()
+    output = repository.connexion(data)
+    if output is None:
+        return jsonify({"error" : "Identifiant ou Mot de passe Incorrect"}),401
+    return jsonify({"message" : "Connecter ...", "data" : output}),200
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)
