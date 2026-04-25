@@ -91,6 +91,13 @@ def updateMovie(imdbID):
     repository.update_movie_state(imdbID, nv_etat)
     return jsonify({"erreur": "Updated successfully", "etat": nv_etat}), 200
 
+@app.route('/compte', methods=['POST'])
+def creation_user():
+    data = request.get_json()
+    output = repository.creation_user(data)
+    if output == -1:
+        return jsonify({"error" : "Ce nom utilisateur existe déja, veuillez choisir autre"}),409
+    return jsonify({"message" : "Votre compte a été creer"}), 201
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

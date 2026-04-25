@@ -54,3 +54,20 @@ def update_movie_state(imdbID, nv_etat):
     cursor.close()
     conn.close()
     return rows_affected > 0
+
+def creation_user(data):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM users WHERE username = %s", (data["username"],))
+    verification = cursor.fetchone()
+    if verification is not None:
+        return -1
+
+    sql = "INSERT INTO users (username,mdp) VALUES (%s,%s)"
+    valeur = (data['username'],data['password'])
+    cursor.execute(sql,valeur)
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return 1

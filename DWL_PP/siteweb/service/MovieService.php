@@ -64,5 +64,20 @@ class MovieService
         $response = file_get_contents($url, false, $context);
         return json_decode($response, true);
     }
+    public static function creerCompte($data){
+        $url = API_BASE_URL . "/compte";
+        $content = json_encode($data);
+        $options = [
+            "http" => [
+                "method" => "POST",
+                "header" => "Content-Type: application/json",
+                "content" => $content,
+                "ignore_errors" => true
+            ]
+        ];
+        $context = stream_context_create($options);
+        $response = file_get_contents($url, false, $context);
+        return json_decode($response,true);
+    }
 }
 ?>
