@@ -27,6 +27,19 @@ if (isset($data['film_ID'])) {
     echo json_encode($movieData);
     exit; // TRÈS IMPORTANT : on arrête tout ici !
 }
+if (isset($_POST["connexion-deconnexion"])){
+    if ($username != "Unknown") {
+        $conneted = "Your are logged out";
+        session_unset();
+        session_destroy();
+        header("Location: MoteurRecherche.php");
+        exit;
+    }
+    else {
+        header("Location: Login.php");
+        exit;
+    }
+}
 require_once "view/affichage_Search.php"
 
 ?>
