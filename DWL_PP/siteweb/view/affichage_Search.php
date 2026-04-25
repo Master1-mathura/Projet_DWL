@@ -8,6 +8,29 @@
 </head>
 <body>
     <header class="main-header">
+        <div class="nav">
+            <h1>Welcome <span><?php echo htmlspecialchars($username); ?></span></h1>
+            <a href="DWL.php" class="watchlist-link" title="Voir ma Watchlist">
+                <img src="assets/images/watchlist.png" alt="Watchlist" class="watchlist-icon">
+            </a>
+            <a href="MyProfile.php" class="watchlist-link" title="Mon Profil">
+                <p>My Profile</p>
+            </a>
+            <form method="POST" action="MoteurRecherche.php">
+                <?php
+                    if ($username != "Unknown") {
+                        $btnClass = "btn-logout";
+                        $btnText = "← Log Out";
+                    } else {
+                        $btnClass = "btn-login";
+                        $btnText = "→ Log In";
+                    }
+                ?>
+                <button type="submit" name="connexion-deconnexion" class="<?php echo $btnClass; ?>">
+                    <?php echo $btnText; ?>
+                </button>
+            </form>
+        </div>
         <img src="assets/images/logo.png" alt="Logo The Don't Watchlist" class="main-logo">
         <h1>The Don't Watchlist Search Engine</h1>
         <a href="DWL.php" class="watchlist-link" title="Voir ma Watchlist">

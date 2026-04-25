@@ -2,8 +2,12 @@
 
 require_once "config/configuration.php";
 require_once "service/MovieService.php";
+session_start();
 
 $searchResults = [];
+
+$username = $_SESSION['username'] ?? 'Unknown';
+$id_user = $_SESSION['id'] ?? 'Unknown';
 
 if(isset($_GET["requete"])){
     $query = $_GET["requete"];

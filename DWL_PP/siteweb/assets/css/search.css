@@ -62,27 +62,122 @@ h1 {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* L'icône Watchlist placée en haut à droite du header */
+/*DEBUT ↓
+/* L'icône Watchlist intégrée dans la nav */
 .watchlist-link {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 10px;
+    /* On retire le position: absolute pour qu'il suive le flux de la barre nav */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%; /* Pour un bel effet rond au survol */
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.watchlist-link:hover {
+    background: rgba(187, 164, 214, 0.1); /* Petit fond violet transparent au survol */
 }
 
 .watchlist-icon {
-    width: 45px;
+    width: 28px; /* Un peu plus petit pour bien s'insérer dans la "pilule" de navigation */
     /* Transforme l'image noire en blanche et ajoute un glow violet */
     filter: invert(1) drop-shadow(0 0 5px rgba(187, 164, 214, 0.5));
     transition: var(--transition);
 }
-
 .watchlist-link:hover .watchlist-icon {
     transform: scale(1.15) rotate(5deg);
     filter: invert(1) drop-shadow(0 0 15px rgba(187, 164, 214, 0.8));
 }
+/* =========================================
+   NAVIGATION BAR
+   ========================================= */
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 700px; /* Aligné avec la barre de recherche */
+    background: rgba(26, 19, 37, 0.6); /* Surface color avec transparence */
+    backdrop-filter: blur(10px); /* Effet verre trempé / Glassmorphism */
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: 1px solid rgba(187, 164, 214, 0.15); /* Bordure subtile de ta couleur primary-light */
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
 
+/* On écrase le style du H1 global spécifiquement pour la nav */
+.nav h1 {
+    font-size: 1.1rem;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text-muted);
+    text-shadow: none;
+    margin: 0;
+}
+
+.nav h1 span {
+    color: var(--primary-light);
+    font-weight: 800;
+}
+
+.nav p {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-main);
+    transition: var(--transition);
+    margin: 0;
+    font-size: 1rem;
+}
+
+.nav p:hover {
+    color: var(--accent-color);
+    text-shadow: 0 0 8px rgba(123, 88, 163, 0.5);
+    transform: translateY(-2px);
+}
+
+.nav form {
+    margin: 0; /* Enlève la marge par défaut des formulaires */
+}
+.btn-logout {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-logout:hover {
+    background: #e74c3c;
+    color: white;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+    transform: scale(1.05);
+}
+
+/* Le bouton de connexion stylé (Vert) */
+.btn-login {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71; /* Un beau vert émeraude */
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-login:hover {
+    background: #2ecc71;
+    color: white;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+    transform: scale(1.05);
+}
 /* =========================================
    SEARCH BAR
    ========================================= */
@@ -343,14 +438,14 @@ h1 {
 }
 
 /* Couleurs de la jauge (un peu transparentes pour le style) */
-.fill-high { 
-    background: linear-gradient(90deg, rgba(46,204,113,0.2) 0%, rgba(46,204,113,0.7) 100%); 
+.fill-high {
+    background: linear-gradient(90deg, rgba(46,204,113,0.2) 0%, rgba(46,204,113,0.7) 100%);
 }
-.fill-medium { 
-    background: linear-gradient(90deg, rgba(241,196,15,0.2) 0%, rgba(241,196,15,0.7) 100%); 
+.fill-medium {
+    background: linear-gradient(90deg, rgba(241,196,15,0.2) 0%, rgba(241,196,15,0.7) 100%);
 }
-.fill-low { 
-    background: linear-gradient(90deg, rgba(231,76,60,0.2) 0%, rgba(231,76,60,0.7) 100%); 
+.fill-low {
+    background: linear-gradient(90deg, rgba(231,76,60,0.2) 0%, rgba(231,76,60,0.7) 100%);
 }
 
 .score-text {
@@ -415,21 +510,21 @@ h1 {
     .modal-layout {
         flex-direction: column; /* On empile sur petit écran */
     }
-    
+
     .modal-poster-side {
         width: 100%;
         height: 250px; /* Hauteur fixe pour l'image sur mobile */
     }
-    
+
     .modal-poster-side img {
         object-position: top; /* Garde le haut de l'affiche visible */
     }
-    
+
     .modal-info-side {
         width: 100%;
         padding: 30px 20px;
     }
-    
+
     #box-title {
         font-size: 1.8rem;
     }
@@ -489,17 +584,17 @@ h1 {
 .fear-poster:nth-child(5) { animation-delay: 2s; }
 
 @keyframes fearHighlight {
-    0%, 100% { 
-        opacity: 0.3; 
-        filter: grayscale(100%); 
-        transform: scale(1); 
-        box-shadow: none; 
+    0%, 100% {
+        opacity: 0.3;
+        filter: grayscale(100%);
+        transform: scale(1);
+        box-shadow: none;
     }
-    10%, 30% { 
+    10%, 30% {
         /* C'est l'équivalent du "hover" : couleur, lumière et agrandissement */
-        opacity: 1; 
-        filter: grayscale(0%); 
-        transform: scale(1.15) translateY(-10px); 
+        opacity: 1;
+        filter: grayscale(0%);
+        transform: scale(1.15) translateY(-10px);
         box-shadow: 0 15px 25px rgba(123, 88, 163, 0.6);  /*TESST*/
     }
 }
