@@ -106,5 +106,20 @@ def connexion():
     if output is None:
         return jsonify({"error" : "Identifiant ou Mot de passe Incorrect"}),401
     return jsonify({"message" : "Connecter ...", "data" : output}),200
+
+@app.route('/compte/<int:id>', methods=['PUT'])
+def update_user(id):
+    data = request.get_json()
+    output = repository.update_user(id,data)
+    if output == 0:
+        return jsonify({"error" : "ID non trouvée"}),404
+    elif output == -1 :
+        return jsonify({"error" : "Le Username existe déjà, veuillez choisir un autre"}),409
+    elif output == -2:
+        return jsonify({"error" : "L'ancien mot de passe est incorrect."}), 403
+    elif output == -3:
+        return jsonify({"error" : "Nom d'utilisateut identique à l'actuelle"}),400
+
+    return jsonify({"message" : "Modification effectué"}),200
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

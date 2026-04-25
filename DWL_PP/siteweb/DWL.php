@@ -1,7 +1,12 @@
 <?php 
 require_once "config/configuration.php";
 require_once "service/MovieService.php";
-
+session_start();
+$username = $_SESSION['username'] ?? 'Unknown';
+if ($username == "Unknown") {
+    header("Location: Login.php");
+    exit;
+}
 if (isset($_POST["delete_id"])) {
     $id_a_supprimer = $_POST["delete_id"];
     MovieService::deleteMovieWL($id_a_supprimer); 

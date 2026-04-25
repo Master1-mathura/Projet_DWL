@@ -33,9 +33,6 @@
         </div>
         <img src="assets/images/logo.png" alt="Logo The Don't Watchlist" class="main-logo">
         <h1>The Don't Watchlist Search Engine</h1>
-        <a href="DWL.php" class="watchlist-link" title="Voir ma Watchlist">
-            <img src="assets/images/watchlist.png" alt="Watchlist" class="watchlist-icon">
-        </a>
     </header>
     <main class="container">
         <form method = "get" class="search-form">

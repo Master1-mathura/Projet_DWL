@@ -1,0 +1,39 @@
+<?php
+require_once "config/configuration.php";
+require_once "service/MovieService.php";
+
+
+session_start();
+$username = $_SESSION['username'] ?? 'Unknown';
+if ($username == "Unknown") {
+    header("Location: Login.php");
+    exit;
+}
+
+$username = $_SESSION['username'];
+$id_user = $_SESSION['id'];
+
+$ma_watchlist = MovieService::getWatchlist($id_user);
+
+if(isset($_POST['update_profile'])){
+    $data = [
+        "id" => $id_user,
+        "username" => $_POST['new_username'],
+        'old_mdp' => $_POST['old_password'],
+        "mdp" => $_POST['new_password']
+
+    ];
+    $data = MovieService::updateProfile($data);
+    if(isset($data['error'])){
+        $error = $data['error'];
+    }
+    if(isset($data['message'])){
+        $username = $_POST['new_username'];
+        $_SESSION['username'] = $username;
+        $message = $data['message'];
+    }
+
+}
+$nombre_de_films = count($ma_watchlist);
+require_once "view/affichage_myprofile.php";
+?>
