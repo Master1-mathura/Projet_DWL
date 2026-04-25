@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>Se connecter - The Don't Watchlist</title>
-        <link rel="stylesheet" href="assets/css/style_login.css">
+        <link rel="stylesheet" href="assets/css/login.css">
     </head>
     <body>
         <div class="login-card">
