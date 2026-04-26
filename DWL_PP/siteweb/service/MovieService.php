@@ -6,7 +6,7 @@ class MovieService
     public static function searchMotor($query){
         $url = API_BASE_URL . "/search?q=" . urlencode($query);
         $response = file_get_contents($url, true);
-        return $response;
+        return json_decode($response, true);
     }
 
     public static function getWatchlist($user_id)
@@ -17,9 +17,8 @@ class MovieService
     }
 
     public static function addWatchlist($metadata,$user_id){
-        $url = API_BASE_URL . "/watchlist";
-        
-        $data = json_decode($metadata,true);
+        $url = API_BASE_URL . "/watchlist";;
+        $data = is_string($metadata) ? json_decode($metadata, true) : $metadata;
         $data['user_id'] = $user_id;
         $content = json_encode($data);
 
@@ -32,14 +31,44 @@ class MovieService
         ];
         $context = stream_context_create($options);
         $response = file_get_contents($url, false, $context);
-
-        return $response;
+        return json_decode($response, true);
 
     }
     public static function getMovieData($filmID){
         $url = API_BASE_URL . "/movies"  . "/" . $filmID;
         $response = file_get_contents($url, true);
-        return $response;
+        return json_decode($response, true);
+    }
+
+    public static function deleteMovieWL($filmID){
+        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID;
+        $options = [
+            "http" => [
+                "method" => "DELETE",
+                "header" => "Content-Type: application/json",
+                "ignore_errors" => true
+            ]
+        ];
+        $context = stream_context_create($options);
+        $response = @file_get_contents($url, false, $context);
+        return json_decode($response, true);
+    }
+
+    public static function updateEtat($filmID, $nv_etat){
+        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID;
+        $data = json_encode(["etat" => $nv_etat]);
+        
+        $options = [
+            "http" => [
+                "method" => "PUT",
+                "header" => "Content-Type: application/json",
+                "content" => $data,
+                "ignore_errors" => true
+            ]
+        ];
+        $context = stream_context_create($options);
+        $response = file_get_contents($url, false, $context);
+        return json_decode($response, true);
     }
 
     public static function creerCompte($data){

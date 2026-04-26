@@ -2,7 +2,7 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>S'inscrire - The Don't Watchlist</title>
+        <title>Register - The Don't Watchlist</title>
         <link rel="stylesheet" href="assets/css/register.css">
     </head>
     <body>
@@ -10,20 +10,20 @@
 
             <img src="assets/images/logo.png" alt="Logo" class="login-logo">
 
-            <h2>Créer un compte</h2>
+            <h2>Create account</h2>
 
             <form method="POST">
                 <div class="input-group">
-                    <label>Nom d'utilisateur :</label>
+                    <label>User name :</label>
                     <input type="text" name="username" required>
                 </div>
 
                 <div class="input-group">
-                    <label>Mot de passe :</label>
+                    <label>Password :</label>
                     <input type="password" name="password" required>
                 </div>
 
-                <button type="submit" name="register">S'inscrire</button>
+                <button type="submit" name="register">Register</button>
             </form>
 
             <?php if(!empty($error)): ?>
@@ -36,8 +36,8 @@
 
             <div style="margin-top: 20px; text-align: center;">
                 <p style="color: var(--text-muted); font-size: 0.9rem;">
-                    Déjà un compte ?
-                    <a href="Login.php" style="color: var(--primary-light); text-decoration: none; font-weight: bold;">Se connecter</a>
+                    You already have an account ?
+                    <a href="Login.php" style="color: var(--primary-light); text-decoration: none; font-weight: bold;">Log in</a>
                 </p>
             </div>
 

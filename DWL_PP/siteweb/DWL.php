@@ -20,10 +20,7 @@ if (isset($_POST["update_id"]) && isset($_POST["nv_etat"]) && !empty($_POST["upd
     exit;
 }
 
-$url = API_BASE_URL . "/";
-
-$response = file_get_contents($url);
-
-$watchlist = MovieService::getWatchlist();
+$id_user = $_SESSION['id'];
+$watchlist = MovieService::getWatchlist($id_user);
 require_once "view/affichage_DWL.php";
 ?>

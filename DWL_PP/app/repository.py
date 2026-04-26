@@ -5,7 +5,6 @@ def get_all(user_id):
     cursor = conn.cursor(dictionary=True)
     sql = "SELECT * FROM watchlist WHERE user_id = %s"
     cursor.execute(sql,(user_id,))
-
     result = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -26,6 +25,37 @@ def add_movies(data):
 
     return "Succès : Le film a été ajoute dans votre watchlist"
 
+
+def get_movie_by_id(imdbID):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM watchlist WHERE imdb_id = %s", (imdbID,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result
+
+
+def delete_movie(imdbID):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM watchlist WHERE imdb_id = %s", (imdbID,))
+    conn.commit()
+    rows_affected = cursor.rowcount
+    cursor.close()
+    conn.close()
+    return rows_affected > 0
+
+def update_movie_state(imdbID, nv_etat):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE watchlist SET etat = %s WHERE imdb_id = %s", (nv_etat, imdbID))
+    conn.commit()
+    rows_affected = cursor.rowcount
+    cursor.close()
+    conn.close()
+    return rows_affected > 0
+
 def creation_user(data):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -34,7 +64,7 @@ def creation_user(data):
     verification = cursor.fetchone()
     if verification is not None:
         return -1
-    
+
     sql = "INSERT INTO users (username,mdp) VALUES (%s,%s)"
     valeur = (data['username'],data['password'])
     cursor.execute(sql,valeur)
@@ -58,7 +88,6 @@ def connexion(data):
     conn.close()
     return verification
 
-
 def delete_user(id):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -76,18 +105,17 @@ def delete_user(id):
     cursor.execute(query,(id,))
     conn.commit()
     cursor.close()
-    cursor.close()
     conn.close()
     return 1
 
 def update_user(identifiant,data):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     query = "SELECT * FROM users WHERE id = %s"
     cursor.execute(query, (identifiant,))
     existe = cursor.fetchone()
-    
+
     if existe is None or len(data) == 0:
         cursor.close()
         conn.close()
@@ -106,7 +134,7 @@ def update_user(identifiant,data):
         cursor.close()
         conn.close()
         return -3
-    
+
     if "old_mdp" in data and "mdp" in data:
         if data["old_mdp"] != "":
             if data["old_mdp"] != existe["mdp"]:
@@ -119,16 +147,16 @@ def update_user(identifiant,data):
     valeur = []
     for key, values in data.items():
         if key == "id" or values == "":
-                    continue            
+            continue
         champs.append(f"{key} = %s")
         valeur.append(values)
-    
+
     if len(champs) == 0:
         cursor.close()
         conn.close()
         return 0
-    
-    set_clause = ', '.join(champs)  
+
+    set_clause = ', '.join(champs)
 
     query = f"UPDATE users SET {set_clause} WHERE id = %s"
     valeur.append(identifiant)

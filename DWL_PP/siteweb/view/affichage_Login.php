@@ -2,7 +2,7 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>Se connecter - The Don't Watchlist</title>
+        <title>Log in - The Don't Watchlist</title>
         <link rel="stylesheet" href="assets/css/login.css">
     </head>
     <body>
@@ -35,8 +35,8 @@
             <?php endif; ?>
             <div style="margin-top: 20px; text-align: center;">
                 <p style="color: var(--text-muted); font-size: 0.9rem;">
-                    Pas de compte ?
-                    <a href="Register.php" style="color: var(--primary-light); text-decoration: none; font-weight: bold;">S'inscrire</a>
+                    No account ?
+                    <a href="Register.php" style="color: var(--primary-light); text-decoration: none; font-weight: bold;">Create one</a>
                 </p>
             </div>
         </div>
