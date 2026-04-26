@@ -505,31 +505,6 @@ h1 {
     background: white;
 }
 
-/* --- Responsive pour mobile --- */
-@media (max-width: 768px) {
-    .modal-layout {
-        flex-direction: column; /* On empile sur petit écran */
-    }
-
-    .modal-poster-side {
-        width: 100%;
-        height: 250px; /* Hauteur fixe pour l'image sur mobile */
-    }
-
-    .modal-poster-side img {
-        object-position: top; /* Garde le haut de l'affiche visible */
-    }
-
-    .modal-info-side {
-        width: 100%;
-        padding: 30px 20px;
-    }
-
-    #box-title {
-        font-size: 1.8rem;
-    }
-}
-
 
 /* =========================================
    FEAR LOADER ANIMATION
@@ -600,27 +575,158 @@ h1 {
 }
 
 /* =========================================
-   RESPONSIVE
+   📱 MOBILE RESPONSIVE DESIGN (UI/UX Optimisé)
    ========================================= */
-@media (max-width: 600px) {
-    .watchlist-link {
-        position: static;
-        transform: none;
-        margin-top: 10px;
+
+@media (max-width: 768px) {
+    /* --- 1. Global & Typographie --- */
+    body {
+        padding: 0 10px; /* Donne un peu d'air sur les côtés de l'écran */
     }
+
+    .main-header {
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .main-logo {
+        width: 90px; /* Logo légèrement plus compact */
+    }
+
+    h1 {
+        font-size: 1.4rem; /* Titre principal plus adapté aux petits écrans */
+    }
+
+    /* --- 2. Navigation Bar --- */
+    .nav {
+        flex-wrap: wrap; /* Permet aux éléments de passer à la ligne naturellement */
+        justify-content: center;
+        gap: 12px;
+        padding: 15px;
+        border-radius: 20px;
+    }
+
+    .nav h1 {
+        width: 100%; /* Isole le message de bienvenue sur sa propre ligne */
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+
+    .watchlist-link p {
+        font-size: 0.9rem; /* Réduit un peu le texte "My Profile" */
+    }
+
+    /* --- 3. Barre de Recherche --- */
+    .search-form label {
+        font-size: 1.1rem;
+    }
+
     .search-group {
-        flex-direction: column;
-        border-radius: var(--radius-md);
+        flex-direction: column; /* Superpose l'input et le bouton */
+        border-radius: 20px;
     }
+
+    .search-group input {
+        font-size: 16px !important; /* ⚠️ OBLIGATOIRE : Empêche l'iPhone de zoomer automatiquement au clic */
+        padding: 15px;
+        text-align: center; /* Centre le texte tapé sur mobile */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Séparation discrète */
+    }
+
     .search-group button {
         padding: 15px;
+        width: 100%; /* Bouton large, parfait pour le pouce */
+        border-radius: 0 0 20px 20px;
     }
+
+    /* --- 4. Liste des Résultats --- */
+    .results-container {
+        padding-bottom: 30px; /* Espace en bas de page */
+    }
+
     .color-bar {
-        flex-direction: column;
+        flex-direction: column; /* Empile l'ID, le Titre et le Score */
+        gap: 8px;
+        padding: 15px;
         text-align: center;
-        gap: 5px;
     }
-    .film-score {
-        margin: 5px 0;
+
+    .open-btn {
+        min-height: 50px; /* Assure une excellente "Touch Target" pour les gros doigts */
+    }
+
+    .film-title {
+        font-size: 1.05rem;
+    }
+
+    /* --- 5. Fenêtre Modale (Détails du Film) --- */
+    .premium-modal {
+        width: 95%; /* Prend presque tout l'écran */
+        max-height: 85vh; /* Ne dépasse jamais 85% de la hauteur de l'écran */
+        display: flex;
+        flex-direction: column;
+        border-radius: 20px;
+        overflow-y: auto; /* ⚠️ CRUCIAL : Permet de scroller DANS la modale si le texte est long */
+    }
+
+    .modal-layout {
+        flex-direction: column;
+    }
+
+    .modal-poster-side {
+        width: 100%;
+        height: 220px; /* Hauteur fixe pour l'image en entête */
+        flex-shrink: 0;
+    }
+
+    .modal-info-side {
+        width: 100%;
+        padding: 20px 15px; /* Marges internes réduites pour maximiser l'espace texte */
+    }
+
+    .close-btn {
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.6); /* Fond plus sombre pour contraster avec l'image du film */
+        backdrop-filter: blur(5px);
+    }
+
+    #box-title {
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+
+    #box-synposis {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 25px;
+    }
+
+    .premium-add-btn {
+        width: 100%; /* Bouton d'ajout pleine largeur */
+        justify-content: center;
+        padding: 15px;
+    }
+
+    /* --- 6. Loader Animation --- */
+    .loader-posters {
+        flex-wrap: wrap; /* Si l'écran est minuscule, les posters passent à la ligne au lieu d'être écrasés */
+    }
+
+    .fear-poster {
+        width: 70px;
+        height: 105px;
+    }
+}
+
+/* Optimisation extrême pour les tous petits téléphones (ex: iPhone SE) */
+@media (max-width: 400px) {
+    .nav {
+        flex-direction: column; /* Tout s'empile proprement */
+    }
+
+    .btn-login, .btn-logout {
+        width: 100%;
     }
 }
