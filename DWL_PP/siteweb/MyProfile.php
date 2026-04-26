@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once "config/configuration.php";
 require_once "service/MovieService.php";
 
@@ -13,7 +13,9 @@ if ($username == "Unknown") {
 $username = $_SESSION['username'];
 $id_user = $_SESSION['id'];
 
+
 $ma_watchlist = MovieService::getWatchlist($id_user);
+
 
 if(isset($_POST['update_profile'])){
     $data = [
@@ -33,6 +35,19 @@ if(isset($_POST['update_profile'])){
         $message = $data['message'];
     }
 
+}
+
+if(isset($_POST["delete_profile"])){
+    $reponse = MovieService::deleteProfile($id_user);
+    if(isset($reponse['error'])){
+        $error = $reponse['error'];
+    }
+    if(isset($reponse['message'])){
+        $message = $reponse['message'];
+        session_destroy();
+        header("Location: login.php");
+        exit();
+    }
 }
 $nombre_de_films = count($ma_watchlist);
 require_once "view/affichage_myprofile.php";
