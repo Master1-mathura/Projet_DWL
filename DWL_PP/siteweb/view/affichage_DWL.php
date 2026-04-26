@@ -51,7 +51,7 @@
                         <?php foreach ($watchlist as $movie) : ?>
                             <article class="movie-card" 
                                     onclick="selectMovie(this)"
-                                    data-id="<?= htmlspecialchars($movie['id']) ?>" 
+                                    data-id="<?= htmlspecialchars($movie['imdb_id']) ?>"
                                     data-bg="<?= htmlspecialchars($movie['background']) ?>"
                                     data-title="<?= htmlspecialchars($movie['film_name']) ?>"
                                     data-state = "<?= htmlspecialchars($movie['etat']) ?>">

@@ -13,8 +13,8 @@ def get_all():
 def add_movies(data):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    sql = "INSERT INTO watchlist (id,film_name,poster,background,etat) VALUES (%s,%s,%s,%s,%s)"
-    valeurs = (data['id'], data['title'],data['poster'],data["background"],"En Attente")
+    sql = "INSERT INTO watchlist (imdb_id, user_id, film_name, poster, background, etat) VALUES (%s, %s, %s, %s, %s, %s)"
+    valeurs = (data['id'], data['user_id'], data['title'], data['poster'], data["background"], "En Attente")
 
     cursor.execute(sql,valeurs)
     conn.commit()
@@ -28,7 +28,7 @@ def add_movies(data):
 def get_movie_by_id(imdbID):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM watchlist WHERE id = %s", (imdbID,))
+    cursor.execute("SELECT * FROM watchlist WHERE imdb_id = %s", (imdbID,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -38,7 +38,7 @@ def get_movie_by_id(imdbID):
 def delete_movie(imdbID):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM watchlist WHERE id = %s", (imdbID,))
+    cursor.execute("DELETE FROM watchlist WHERE imdb_id = %s", (imdbID,))
     conn.commit()
     rows_affected = cursor.rowcount
     cursor.close()
@@ -48,7 +48,7 @@ def delete_movie(imdbID):
 def update_movie_state(imdbID, nv_etat):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE watchlist SET etat = %s WHERE id = %s", (nv_etat, imdbID))
+    cursor.execute("UPDATE watchlist SET etat = %s WHERE imdb_id = %s", (nv_etat, imdbID))
     conn.commit()
     rows_affected = cursor.rowcount
     cursor.close()

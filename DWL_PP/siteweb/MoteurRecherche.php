@@ -17,7 +17,7 @@ if(isset($_GET["requete"])){
 if(isset($_POST["add_watchlist"])){
     $imdb_id = $_POST["add_watchlist"];
     $metadata = MovieService::getMovieData($imdb_id);
-    $ajout = MovieService::addWatchlist($metadata);
+    $ajout = MovieService::addWatchlist($metadata,$id_user);
 }
 
 $data = json_decode(file_get_contents('php://input'), true);

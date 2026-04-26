@@ -15,9 +15,11 @@ class MovieService
         return json_decode($response, true);
     }
 
-    public static function addWatchlist($metadata){
-        $url = API_BASE_URL . "/watchlist";
+    public static function addWatchlist($metadata,$user_id){
+        $url = API_BASE_URL . "/watchlist";;
+        $metadata['user_id'] = $user_id;
         $content = json_encode($metadata);
+
         $options = [
             "http" => [
                 "method" => "POST",
