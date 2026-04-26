@@ -78,25 +78,24 @@ def ajout_watchlist():
     output = repository.add_movies(data)
     return jsonify(output),201
 
-@app.route('/watchlist/<string:imdbID>',methods=['DELETE'])
-def deleteMovie(imdbID):
-    movie = repository.get_movie_by_id(imdbID)
-    if not movie:
+@app.route('/watchlist/<string:imdbID>/<int:user_id>', methods=['DELETE'])
+def deleteMovie(imdbID, user_id):
+    success = repository.delete_movie(imdbID, user_id)
+    if not success:
         return jsonify({"error": "Movie not found in watchlist."}), 404
-    repository.delete_movie(imdbID)
-    return jsonify(movie), 200
+    return jsonify({"message": "Deleted successfully"}), 200
 
 @app.route('/watchlist/<string:imdbID>', methods=['PUT'])
 def updateMovie(imdbID):
-    data = request.get_json()
+    data = request.get_json(silent=True) or {} 
     nv_etat = data.get('etat')
-    if not nv_etat:
-        return jsonify({"error": "No given tag."}), 400 
-    movie = repository.get_movie_by_id(imdbID)
-    if not movie:
-        return jsonify({"error": "No movies found."}), 404 
-    repository.update_movie_state(imdbID, nv_etat)
-    return jsonify({"message": "Updated successfully", "etat": nv_etat}), 200
+    user_id = data.get('user_id')
+    if not nv_etat or not user_id:
+        return jsonify({"error": "Données manquantes."}), 400 
+    success = repository.update_movie_state(imdbID, nv_etat, user_id)
+    if not success:
+        return jsonify({"error": "Film non trouvé dans votre watchlist."}), 404 
+    return jsonify({"message": "Mis à jour avec succès", "etat": nv_etat}), 200
 
 @app.route('/compte', methods=['POST'])
 def creation_user():

@@ -68,9 +68,9 @@ async function ajouterWatchlist(event) {
             body: formData,
             headers: {'Content-Type' : 'application/x-www-form-urlencoded'}
         });
-        alert("Film ajouté à la watchlist");
+        alert("Film added to watchlist");
     } catch(error){
-        console.error("Erreur lors de l'ajout :", error);
-        alert("Une erreur est survenue.");
+        console.error("Error while adding :", error);
+        alert("An error occurred.");
     }
 }

@@ -31,9 +31,9 @@
                     <form method="POST" action="DWL.php" style="display:flex; gap:10px;">
                         <input type="hidden" id="update-film-id" name="update_id" value="">
                         <select name="nv_etat" id="update-state-select" style="padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                            <option value="En Attente" style="color: black;">En Attente</option>
-                            <option value="Survécu" style="color: black;">Survécu</option>
-                            <option value="Abandon" style="color: black;">Abandon</option>
+                            <option value="En Attente" style="color: black;">Waiting</option>
+                            <option value="Survécu" style="color: black;">Survived</option>
+                            <option value="Abandon" style="color: black;">Dropped</option>
                         </select>
                         <button type="submit" class="btn-primary">
                             Update
@@ -130,8 +130,8 @@
                     selectMovie(movieCards[0],1);
                     
                 } else {
-                    document.getElementById('active-title').innerText = "Watchlist Vide";
-                    document.getElementById('active-synopsis').innerText = "Retournez à la recherche pour ajouter vos pires cauchemars.";
+                    document.getElementById('active-title').innerText = "Empty Watchlist";
+                    document.getElementById('active-synopsis').innerText = "Go back to search to add your worst nightmares.";
                     document.querySelector('.carousel-wrapper').style.display = 'none';
                     document.getElementById('carousel-counter').style.display = 'none';
                 }

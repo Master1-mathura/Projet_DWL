@@ -44,10 +44,16 @@
         </form>
 
         <div class="results-container">
-            <?php if (!empty($searchResults)) : ?>
+            <?php if (isset($api_error)) : ?>
+                <div style="text-align: center; margin-top: 50px; padding: 40px 20px; background: rgba(26, 19, 37, 0.4); border: 1px solid rgba(187, 164, 214, 0.1); border-radius: 16px; backdrop-filter: blur(5px);">
+                    <h3 style="color: var(--primary-light); font-weight: 500; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase;">Initialization in progress.</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">The AI model is finalizing its loading.<br>Please refresh the page in a moment.</p>
+                </div>
+                
+            <?php elseif (!empty($searchResults)) : ?>
                 <?php foreach ($searchResults as $film) : ?>
                     <div class="result-row">
-                        <button  class="open-btn" onclick="showDetails('<?= addslashes($film['id']) ?>')">
+                        <button class="open-btn" onclick="showDetails('<?= addslashes($film['id']) ?>')">
                             <div class="color-bar" style="background-color: <?= $film['color'] ?>;">
                                 <span class="film-id">ID : (<?= htmlspecialchars($film['id'])?>)</span>
                                 <span class="film-title"><?= htmlspecialchars($film['film_name']) ?></span>
@@ -56,8 +62,9 @@
                         </button>
                     </div>
                 <?php endforeach; ?>
-            <?php elseif (isset($_POST["query"])) : ?>
-                <p class="no-results">No movies found.</p>
+                
+            <?php elseif (isset($_GET["requete"])) : ?>
+                <p class="no-results" style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 40px;">No movies found.</p>
             <?php endif; ?>
         </div>
     </main>

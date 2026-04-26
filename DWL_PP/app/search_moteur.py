@@ -1,4 +1,5 @@
 import os # Pour éviter les deadlocks sur macOS
+import sys
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
 os.environ["USE_TF"] = "0"
@@ -8,12 +9,10 @@ import pandas as pd
 import torch
 from sentence_transformers import SentenceTransformer, util
 
-# ----- AJOUT POUR PP : variables globales pour éviter pour Flask
 model = None
 doc_embedding = None
 dico_films = None
 liste_ids_films = None
-# ----- FIN AJOUT POUR PP
 
 # ******************************************************************************** #
 # ********************** Étape 1 : Prétraitement du texte ************************ #
@@ -52,35 +51,63 @@ def parsing_script(script):
 # ****************** Étape 2 : Initialisation du modèle + ************************ #
 #                              + Chargement et parsing des données *************** #
 # ******************************************************************************** #
-# cette fonction est appelée au démarrage de Flask
-def init_model():
-    global model, doc_embedding, liste_ids_films, dico_films
-    model = SentenceTransformer('all-MiniLM-L6-v2')
 
-    df = pd.read_json("data/corpus.json", encoding="utf-8")
-    df['text'] = df['text'].apply(parsing_script)
-    dico_films = df.set_index('doc_id').to_dict(orient='index')
-    liste_ids_films = list(dico_films.keys())
-    liste_textes_films = [dico_films[doc_id]["text"] for doc_id in liste_ids_films]
+def init_model() :
+    global model, doc_embedding, liste_ids_films, dico_films
+    
+    try :
+        print("Wait, the AI model is loading")
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+    except Exception as e:
+        print(f"Error: Unable to load AI model.\nDetails : {e}")
+        sys.exit(1)
+
+    chemin_corpus = "data/corpus.json"
+    if not os.path.exists(chemin_corpus):
+        print(f"Error : dataset '{chemin_corpus}' not found.")
+        sys.exit(1)
+    try:
+        df = pd.read_json(chemin_corpus, encoding="utf-8")
+        df['text'] = df['text'].apply(parsing_script)
+        dico_films = df.set_index('doc_id').to_dict(orient='index')
+        liste_ids_films = list(dico_films.keys())
+        liste_textes_films = [dico_films[doc_id]["text"] for doc_id in liste_ids_films]
+    except ValueError:
+        print("Error: invalid JSON.")
+        sys.exit(1)
+    except KeyError as e:
+        print(f" Error: column {e} is missing from the corpus.json file.")
+        sys.exit(1)
     sauvegarde = "data/embeddings_films.pt"
     # ******************************************************************************** #
     # ****************** Étape 3 : Encodage des scripts (Embeddings) ***************** #
     # ******************************************************************************** #
-    if os.path.exists(sauvegarde):
-        doc_embedding = torch.load(sauvegarde)
-    else :
-        doc_embedding = []
-        total_films = len(liste_textes_films)
-        for i,film in enumerate(liste_textes_films):
-            if len(film) == 0:
-                vecteurs_liste_morceaux = torch.zeros((1,384))
-            else :
-                vecteurs_liste_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
+    if os.path.exists(sauvegarde) :
+        try :
+            doc_embedding = torch.load(sauvegarde)
+        except Exception as e :
+            print(f"Error : corrupted embeddings file. Details : {e}")
+            os.remove(sauvegarde)
+            doc_embedding = None # Forcera le recalcul juste en dessous
+    else:
+        doc_embedding is None
+    if doc_embedding is None :
+        try : 
+            doc_embedding = []
+            total_films = len(liste_textes_films)
+            for i,film in enumerate(liste_textes_films):
+                if len(film) == 0:
+                    vecteurs_liste_morceaux = torch.zeros((1,384))
+                else :
+                    vecteurs_liste_morceaux = model.encode(film,convert_to_tensor=True,show_progress_bar=False,batch_size = 62)
 
-            doc_embedding.append(vecteurs_liste_morceaux)
-            print(f"Encodage du film {i + 1} / {total_films}...", end="\r")
-        torch.save(doc_embedding,sauvegarde)
-
+                doc_embedding.append(vecteurs_liste_morceaux)
+                print(f"Encodage du film {i + 1} / {total_films}...", end="\r")
+            os.makedirs(os.path.dirname(sauvegarde), exist_ok=True)
+            torch.save(doc_embedding,sauvegarde)
+        except Exception as e:
+            print(f"\nTensor failed. \nDétails : {e}")
+            sys.exit(1)
 # ******************************************************************************** #
 # **************** Étape 4 : Traitement de la requête et scoring ***************** #
 # ******************************************************************************** #
@@ -124,7 +151,6 @@ def pseudo_relevance_feedback(query_vector, top_results, doc_embeddings, liste_i
         idx = doc_id_to_idx[docID]
         morceaux_film_pertinent = doc_embeddings[idx]
 
-        # alignement matériel (mac/windows)
         morceaux_film_pertinent = morceaux_film_pertinent.to(query_vector.device)
 
         vecteur_moyen_film = torch.mean(morceaux_film_pertinent,dim=0)
@@ -147,13 +173,12 @@ def rechercher(query):
     vect_prf = pseudo_relevance_feedback(vect_requete, top_res, doc_embedding, liste_ids_films)
     res_finaux = scores_simi(vect_prf)
 
-    # ----- AJOUT POUR PP : on affiche plus les resultat par des print mais on les stocke et on les envoiçe à app.py
     resultats_pour_flask = []
 
     for id, score in res_finaux[:res_recherche_init]:
         resultats_pour_flask.append({
             "id": dico_films[id]["imdbID"],
             "film_name": dico_films[id]['title'],
-            "score": float(score) # On convertit le Tenseur PyTorch en chiffre standard pour le JSON
+            "score": float(score)
         })
     return resultats_pour_flask

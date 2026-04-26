@@ -9,11 +9,20 @@ $searchResults = [];
 $username = $_SESSION['username'] ?? 'Unknown';
 $id_user = $_SESSION['id'] ?? 'Unknown';
 
+$api_error = null;
+
 if(isset($_GET["requete"])){
     $query = $_GET["requete"];
-    //$res = MovieService::searchMotor($query);
-    $searchResults = MovieService::searchMotor($query);
+    $response = MovieService::searchMotor($query);
+    
+    // Attention, si message d'erreur on l'intercepte et on la met dans api_error qu'on envoie au html
+    if (isset($response['error'])) {
+        $api_error = $response['error'];
+    } else {
+        $searchResults = $response;
+    }
 }
+
 if(isset($_POST["add_watchlist"])){
     $imdb_id = $_POST["add_watchlist"];
     $metadata = MovieService::getMovieData($imdb_id);
