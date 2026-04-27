@@ -20,8 +20,6 @@ services:
       MYSQL_DATABASE: watchlist_api
     volumes:
       - db_data:/var/lib/mysql
-      - ./app/donnees.sql:/docker-entrypoint-initdb.d/donnees.sql
-
   
   pageweb:
     image: php:apache

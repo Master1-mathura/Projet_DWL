@@ -30,8 +30,10 @@ if(isset($_POST['update_profile'])){
         $error = $data['error'];
     }
     if(isset($data['message'])){
-        $username = $_POST['new_username'];
-        $_SESSION['username'] = $username;
+        if ($_POST['new_username'] != ""){
+            $username = $_POST['new_username'];
+            $_SESSION['username'] = $username;
+        }
         $message = $data['message'];
     }
 

@@ -1,18 +1,32 @@
 import traceback
 import requests
-from flask import Flask, jsonify, request
+import time
 import repository
 import search_moteur
+from flask import Flask, jsonify, request
+from db import init_db
+from sqlalchemy.exc import OperationalError, DatabaseError
 
 app = Flask(__name__)
 
 TMDB_KEY = "b78f8df42770d71ac2d434fc023adf18"
 
-search_moteur.init_model()
+max_retries = 10
+for i in range(max_retries):
+    try:
+        init_db()
+        print("Connexion à la base de données réussie !")
+        break
+    except (OperationalError, DatabaseError) as e:
+        print(f"Base de données non prête, tentative {i+1}/{max_retries} dans 3 secondes...")
+        time.sleep(3)
+else:
+    print("Erreur critique : Impossible de se connecter à la base de données après plusieurs tentatives.")
 
+search_moteur.init_model()
 @app.errorhandler(Exception)
 def handle_global_error(e):
-    print(traceback.format_exc()) 
+    print(traceback.format_exc())
     return jsonify({
         "error": "Internal Error.",
         "details": str(e)
@@ -28,12 +42,12 @@ def searchMovie():
 
     if not user_query:
         return jsonify([]), 200
-    
+
     resultats = search_moteur.rechercher(user_query)
     resultats_finaux = []
 
     for film in resultats:
-        score = film['score']        
+        score = film['score']
         if score > 0.6:
             film['color'] = '#9b2c3b'
         elif score > 0.3:
@@ -54,8 +68,8 @@ def get_metadata(imdbID):
 
     if tmbd_data.get('movie_results'):
         movie_info = tmbd_data['movie_results'][0]
-        
-        data = {"imdbID" : imdbID, 
+
+        data = {"imdbID" : imdbID,
                 "title" : movie_info.get('title'),
                 "synposis" : movie_info.get('overview'),
                 "poster" : f"https://image.tmdb.org/t/p/w500{movie_info.get('poster_path')}",
@@ -68,7 +82,7 @@ def get_metadata(imdbID):
 @app.route('/watchlist/<int:user_id>', methods=['GET'])
 def getWatchlist(user_id):
     if not user_id:
-         return jsonify({"error" : "user_id manquant"}), 400
+        return jsonify({"error" : "user_id manquant"}), 400
     watchlist = repository.get_all(user_id)
     return jsonify(watchlist),200
 
@@ -78,23 +92,22 @@ def ajout_watchlist():
     output = repository.add_movies(data)
     return jsonify(output),201
 
-@app.route('/watchlist/<string:imdbID>/<int:user_id>', methods=['DELETE'])
-def deleteMovie(imdbID, user_id):
+@app.route('/watchlist/<int:user_id>/<string:imdbID>', methods=['DELETE'])
+def deleteMovie(user_id,imdbID):
     success = repository.delete_movie(imdbID, user_id)
     if not success:
         return jsonify({"error": "Movie not found in watchlist."}), 404
     return jsonify({"message": "Deleted successfully"}), 200
 
-@app.route('/watchlist/<string:imdbID>', methods=['PUT'])
-def updateMovie(imdbID):
-    data = request.get_json(silent=True) or {} 
+@app.route('/watchlist/<int:user_id>/<string:imdbID>', methods=['PUT'])
+def updateMovie(user_id,imdbID):
+    data = request.get_json(silent=True) or {}
     nv_etat = data.get('etat')
-    user_id = data.get('user_id')
     if not nv_etat or not user_id:
-        return jsonify({"error": "Données manquantes."}), 400 
+        return jsonify({"error": "Données manquantes."}), 400
     success = repository.update_movie_state(imdbID, nv_etat, user_id)
     if not success:
-        return jsonify({"error": "Film non trouvé dans votre watchlist."}), 404 
+        return jsonify({"error": "Film non trouvé dans votre watchlist."}), 404
     return jsonify({"message": "Mis à jour avec succès", "etat": nv_etat}), 200
 
 @app.route('/compte', methods=['POST'])

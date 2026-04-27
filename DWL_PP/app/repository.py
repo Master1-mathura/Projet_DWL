@@ -1,206 +1,134 @@
-from db import get_connection
+from db import get_session,init_db
+from orm import User, Watchlist
 
 def get_all(user_id):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-        sql = "SELECT * FROM watchlist WHERE user_id = %s"
-        cursor.execute(sql,(user_id,))
-        return cursor.fetchall()
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
-
+    session = get_session()
+    try:
+        watchlist = session.query(Watchlist).filter(Watchlist.user_id == user_id).all()
+        result = []
+        for item in watchlist:
+            result.append(
+                {"imdb_id" : item.imdb_id,
+                 "user_id" : item.user_id,
+                 "film_name" : item.film_name,
+                 "poster" : item.poster,
+                 "background" : item.background,
+                 "etat" : item.etat
+                 }
+            )
+        return result
+    finally:
+        session.close()
 
 def add_movies(data):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-        sql = "INSERT INTO watchlist (imdb_id, user_id, film_name, poster, background, etat) VALUES (%s, %s, %s, %s, %s, %s)"
-        valeurs = (data['imdbID'], data['user_id'], data['title'], data['poster'], data["background"], "En Attente")
-        
-        cursor.execute(sql,valeurs)
-        conn.commit()
+    session = get_session()
+    try:
+        movie = Watchlist(
+            imdb_id = data["imdbID"],
+            user_id = data["user_id"],
+            film_name = data["title"],
+            poster = data["poster"],
+            background = data["background"],
+            etat = "En Attente"
+        )
+        session.add(movie)
+        session.commit()
         return "The movie has been added to your watchlist successfully !"
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
+    finally:
+        session.close()
 
-def get_movie_by_id(imdbID):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM watchlist WHERE imdb_id = %s", (imdbID,))
-        return cursor.fetchone()
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
+def delete_movie(imdbID,userID):
+    session = get_session()
+    try:
+        movie = session.query(Watchlist).filter((Watchlist.imdb_id == imdbID) & (Watchlist.user_id == userID)).first()
+        if movie:
+            session.delete(movie)
+            session.commit()
+            return 1
+    finally:
+        session.close()
 
-
-def delete_movie(imdbID, user_id):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM watchlist WHERE imdb_id = %s AND user_id = %s", (imdbID, user_id))
-        conn.commit()
-        return cursor.rowcount > 0
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
-
-def update_movie_state(imdbID, nv_etat, user_id):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE watchlist SET etat = %s WHERE imdb_id = %s AND user_id = %s", (nv_etat, imdbID, user_id))
-        conn.commit()
-        return cursor.rowcount > 0
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
+def update_movie_state(imdbID,nvEtat,userID):
+    session = get_session()
+    try:
+        movie = session.query(Watchlist).filter((Watchlist.imdb_id == imdbID) & (Watchlist.user_id == userID)).first()
+        if movie:
+            movie.etat = nvEtat
+            session.commit()
+            return 1
+    finally:
+        session.close()
 
 def creation_user(data):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        cursor.execute("SELECT id FROM users WHERE username = %s", (data["username"],))
-        verification = cursor.fetchone()
-        if verification is not None:
+    session = get_session()
+    try:
+        user = session.query(User).filter(User.username == data["username"]).first()
+        if user :
             return -1
 
-        sql = "INSERT INTO users (username,mdp) VALUES (%s,%s)"
-        valeur = (data['username'],data['password'])
-        cursor.execute(sql,valeur)
-        conn.commit()
-        return 1
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
-
+        new_user = User(username=data["username"],mdp = data["password"])
+        session.add(new_user)
+        session.commit()
+        return 0
+    except Exception as e:
+        session.rollback()
+        return -2
+    finally:
+        session.close()
 
 def connexion(data):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+    session = get_session()
+    try:
+        user = session.query(User).filter((User.username == data["username"]) & (User.mdp == data["password"])).first()
+        if user:
+            return {"id" : user.id, "username" : user.username}
+        return None
+    finally:
+        session.close()
 
-        cursor.execute("SELECT id, username FROM users WHERE username = %s AND mdp = %s", (data["username"],data["password"]))
-        verification = cursor.fetchone()
-        if verification is None:
-            cursor.close()
-            conn.close()
-            return None
-        return verification
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
-
-def delete_user(id):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        query = "SELECT * FROM users WHERE id = %s"
-        cursor.execute(query, (id,))
-        existe = cursor.fetchone()
-        
-        if existe is None :
-            cursor.close()
-            conn.close()
+def delete_user(identifiant):
+    session = get_session()
+    try:
+        user = session.query(User).filter(User.id == identifiant).first()
+        if not user:
             return 0
-
-        query = "DELETE FROM users WHERE id = %s"
-        cursor.execute(query,(id,))
-        conn.commit()
+        session.delete(user)
+        session.commit()
         return 1
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
+    finally:
+        session.close()
+
 
 def update_user(identifiant,data):
-    conn = None
-    cursor = None
-    try :
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        query = "SELECT * FROM users WHERE id = %s"
-        cursor.execute(query, (identifiant,))
-        existe = cursor.fetchone()
-
-        if existe is None or len(data) == 0:
-            return 0
-
-        cursor.execute("SELECT id FROM users WHERE username = %s and id != %s", (data["username"],data["id"]))
-        verification = cursor.fetchone()
-        if verification is not None:
-            return -1
-
-        cursor.execute("SELECT id FROM users WHERE username = %s and id = %s", (data["username"],data["id"]))
-        verification = cursor.fetchone()
-        if verification is not None:
-            return -3
+    session = get_session()
+    try:
+        user = session.query(User).filter(User.id == identifiant).first()
+        if not user or len(data) == 0:
+            return 0 #ID non trouvé ou pas de data envoyer
+        if "username" in data:
+            existe = session.query(User).filter((User.username == data["username"]) & (User.id != identifiant)).first()
+            if existe:
+                return -1 #Username deja pris
+            if user.username == data["username"]:
+                return -3 #Username identique ) l'acutelle
 
         if "old_mdp" in data and "mdp" in data:
             if data["old_mdp"] != "":
-                if data["old_mdp"] != existe["mdp"]:
-                    return -2
+                if data["old_mdp"] != user.mdp:
+                    return -2 #Ancien mot de passe incorrect
                 data.pop("old_mdp")
-
-        champs = []
-        valeur = []
-        for key, values in data.items():
-            if key == "id" or values == "":
+        update = False
+        for key,value in data.items():
+            if key == "id" or value == "":
                 continue
-            champs.append(f"{key} = %s")
-            valeur.append(values)
-
-        if len(champs) == 0:
+            if key == "username" and value == "":
+                value = user.username
+            setattr(user,key,value)
+            update = True
+        if not update :
             return 0
-
-        set_clause = ', '.join(champs)
-        query = f"UPDATE users SET {set_clause} WHERE id = %s"
-        valeur.append(identifiant)
-        valeur = tuple(valeur)
-
-        cursor.execute(query,valeur)
-        conn.commit()
-
+        session.commit()
         return 1
-    finally :
-        if cursor:
-            cursor.close()
-        if conn and conn.is_connected() :
-            conn.close()
+    finally:
+        session.close()
+

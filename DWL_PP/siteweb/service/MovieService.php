@@ -54,13 +54,13 @@ class MovieService
     }
 
     public static function deleteMovieWL($filmID, $user_id){
-        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID . "/" . $user_id;
+        $url = API_BASE_URL . "/watchlist"  . "/" . $user_id . "/" . $filmID ;
         return self::appelAPI($url, 'DELETE');
     }
 
     public static function updateEtat($filmID, $nv_etat, $user_id){
-        $url = API_BASE_URL . "/watchlist"  . "/" . $filmID;
-        return self::appelAPI($url, 'PUT', ["etat" => $nv_etat, "user_id" => $user_id]);
+        $url = API_BASE_URL . "/watchlist"  . "/" .  $user_id . "/" . $filmID ;
+        return self::appelAPI($url, 'PUT', ["etat" => $nv_etat]);
     }
 
     public static function creerCompte($data){
