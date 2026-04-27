@@ -96,6 +96,6 @@
             </div>
         </div>
     </div>
-    <script src="assets/js/script.js"> </script>
+    <script src="assets/js/script_moteur.js"> </script>
 </body>
 </html>

@@ -10,6 +10,14 @@ if ($username == "Unknown") {
 }
 $id_user = $_SESSION['id'];
 
+$data = json_decode(file_get_contents('php://input'), true);
+if (isset($data['film_ID'])) {
+    header('Content-Type: application/json');
+    $movieData = MovieService::getMovieData($data['film_ID']);
+    echo json_encode($movieData);
+    exit;
+}
+
 if (isset($_POST["delete_id"])) {
     $id_a_supprimer = $_POST["delete_id"];
     MovieService::deleteMovieWL($id_a_supprimer, $id_user); 
