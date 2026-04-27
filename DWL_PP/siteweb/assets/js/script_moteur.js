@@ -6,11 +6,13 @@ function openBox(){
 function closeBox(){
     box.style.display = "none";
 }
+
 function closeOnOutsideClick(event){
     if(event.target === box){
         closeBox();
     }
 }
+
 async function showDetails(ID) {
     console.log(ID);
     const response = await fetch('MoteurRecherche.php',{
@@ -56,8 +58,15 @@ async function showDetails(ID) {
 
     openBox();
 }
+
 async function ajouterWatchlist(event) {
     event.preventDefault(); //Empeche le formulaire de recharger la page
+    
+    if (currentUsername === 'Unknown') {
+        window.location.href = "Login.php";
+        return;
+    }
+    
     const filmID = document.getElementById("modal-film-id").value;
 
     const formData = new URLSearchParams(); //Les données pour la requête

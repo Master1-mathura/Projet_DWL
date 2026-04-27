@@ -96,6 +96,9 @@
             </div>
         </div>
     </div>
+    <script>
+        const currentUsername = "<?= addslashes($username) ?>";
+    </script>
     <script src="assets/js/script_moteur.js"> </script>
 </body>
 </html>
