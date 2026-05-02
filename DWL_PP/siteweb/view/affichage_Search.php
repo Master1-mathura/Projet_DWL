@@ -39,7 +39,7 @@
             <label for="query">What are you afraid of ?</label>
             <div class="search-group">
                <input type="text" id="query" name="requete" autocomplete="off" required>
-                <button type="submit">Search</button>
+                <button type="submit" name="Search">Search</button>
             </div>
         </form>
 
@@ -47,9 +47,40 @@
             <?php if (isset($api_error)) : ?>
                 <div style="text-align: center; margin-top: 50px; padding: 40px 20px; background: rgba(26, 19, 37, 0.4); border: 1px solid rgba(187, 164, 214, 0.1); border-radius: 16px; backdrop-filter: blur(5px);">
                     <h3 style="color: var(--primary-light); font-weight: 500; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase;">Initialization in progress.</h3>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">The AI model is finalizing its loading.<br>Please refresh the page in a moment.</p>
+                    <p id="loading-text" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                        The AI model is finalizing its loading.<br>
+                    </p>
+                    <div id="gameContainer">
+                        <div id="clouds"></div>
+                        <div id="score">00000</div>
+                        <div id="message">
+                            DINO GAME<br>
+                            <div id="sub">
+                                ESPACE / ↑ / CLIC pour jouer
+                            </div>
+                        </div>
+                        <div id="dino"></div>
+                        <div id="ground"></div>
+                    </div>
                 </div>
-                
+                <script>
+                    const checkInterval = setInterval(() => {
+                        fetch(window.location.href)
+                            .then(response => response.text())
+                            .then(html => {
+                                if (!html.includes('id="gameContainer"')) {
+                                    clearInterval(checkInterval);
+                                    document.getElementById('loading-text').innerHTML = "<strong style='color: #4CAF50;'>Server ready! Reloading...</strong>";
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 2000);
+                                }
+                            })
+                            .catch(error => {
+                                console.log("L'API n'est pas encore prête...");
+                            });
+                    }, 10000);
+                </script>
             <?php elseif (!empty($searchResults)) : ?>
                 <?php foreach ($searchResults as $film) : ?>
                     <div class="result-row">
@@ -96,9 +127,7 @@
             </div>
         </div>
     </div>
-    <script>
-        const currentUsername = "<?= addslashes($username) ?>";
-    </script>
     <script src="assets/js/script_moteur.js"> </script>
+    <script src="assets/js/DinoGame.js"></script>
 </body>
 </html>
