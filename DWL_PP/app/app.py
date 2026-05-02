@@ -1,6 +1,7 @@
 import traceback
 import requests
 import time
+import os
 import repository
 import search_moteur
 from flask import Flask, jsonify, request
@@ -10,6 +11,9 @@ from sqlalchemy.exc import OperationalError, DatabaseError
 app = Flask(__name__)
 
 TMDB_KEY = "b78f8df42770d71ac2d434fc023adf18"
+
+if os.getenv("TESTING") != "1":
+    search_moteur.init_model()
 
 max_retries = 10
 for i in range(max_retries):
@@ -23,7 +27,6 @@ for i in range(max_retries):
 else:
     print("Erreur critique : Impossible de se connecter à la base de données après plusieurs tentatives.")
 
-search_moteur.init_model()
 @app.errorhandler(Exception)
 def handle_global_error(e):
     print(traceback.format_exc())
@@ -145,8 +148,8 @@ def update_user(id):
 def delete_user(id):
     output = repository.delete_user(id)
     if output == 0:
-        return jsonify({"error" : "Deletion Error"})
-    return jsonify({"message" : "Account Deleted"})
+        return jsonify({"error" : "Deletion Error"}),400
+    return jsonify({"message" : "Account Deleted"}),200
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)
