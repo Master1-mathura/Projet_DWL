@@ -14,18 +14,17 @@ TMDB_KEY = "b78f8df42770d71ac2d434fc023adf18"
 
 if os.getenv("TESTING") != "1":
     search_moteur.init_model()
-
-max_retries = 10
-for i in range(max_retries):
-    try:
-        init_db()
-        print("Connexion à la base de données réussie !")
-        break
-    except (OperationalError, DatabaseError) as e:
-        print(f"Base de données non prête, tentative {i+1}/{max_retries} dans 3 secondes...")
-        time.sleep(3)
-else:
-    print("Erreur critique : Impossible de se connecter à la base de données après plusieurs tentatives.")
+    max_retries = 10
+    for i in range(max_retries):
+        try:
+            init_db()
+            print("Connexion à la base de données réussie !")
+            break 
+        except (OperationalError, DatabaseError) as e:
+            print(f"Base de données non prête, tentative {i+1}/{max_retries} dans 3 secondes...")
+            time.sleep(3)
+    else:
+        print("Erreur critique : Impossible de se connecter à la base de données après plusieurs tentatives.")
 
 @app.errorhandler(Exception)
 def handle_global_error(e):

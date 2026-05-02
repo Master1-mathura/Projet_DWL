@@ -12,6 +12,7 @@ services:
       DB_USER: root
       DB_PASSWORD: 123456
       DB_NAME: watchlist_api
+
   db:
     image: mysql:8.0
     restart: always
