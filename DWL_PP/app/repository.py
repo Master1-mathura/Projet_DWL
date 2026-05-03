@@ -1,5 +1,5 @@
 from db import get_session,init_db
-from orm import User, Watchlist, UserSettings
+from orm import User, Watchlist, UserSettings,Badges
 
 def get_all(user_id):
     session = get_session()
@@ -156,5 +156,73 @@ def get_user_settings(user_id):
         if not user_settings:
             return None
         return {"theme": user_settings.theme, "blur_effect": user_settings.blur_effect}
+    finally:
+        session.close()
+def init_default_badges():
+    session = get_session()
+    try:
+        badge_par_defaut = [
+            {"name": "Cadreur de Watchlist", "description": "You added 10 movies to your watchlist!", "valeur": 10, "type": "watchlist"},
+            {"name": "Architecte de Seance", "description": "You added 20 movies to your watchlist!", "valeur": 20, "type": "watchlist"},
+            {"name": "Directeur de Collection", "description": "You added 30 movies to your watchlist!", "valeur": 30, "type": "watchlist"},
+            {"name": "Œil d'Acier", "description": "You survived 5 movies!", "valeur": 5, "type": "survie"},
+            {"name": "Le Cri du Silence", "description": "You abandoned 10 movies!", "valeur": 10, "type": "abandon"},
+        ]
+        for badge in badge_par_defaut:
+            exist = session.query(Badges).filter(Badges.badge_name == badge["name"]).first()
+            if not exist:
+                new_badge = Badges(badge_name=badge["name"], badge_description=badge["description"], valeur=badge["valeur"], type=badge["type"])
+                session.add(new_badge)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+    finally:
+        session.close()
+
+def save_user_badge(user_id,badge_name):
+    session = get_session()
+    try:
+        badge = session.query(Badges).filter(Badges.badge_name == badge_name).first()
+        if not badge:
+            return -1
+        user = session.query(User).filter(User.id == user_id).first()
+        if not user:
+            return 0
+        user.badges.append(badge)
+        session.commit()
+        return 1
+    except Exception as e:
+        session.rollback()
+        return -2
+    finally:
+        session.close()
+
+def get_user_badges(user_id):
+    session = get_session()
+    try:
+        user = session.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+        badges = user.badges
+        result = []
+        for badge in badges:
+            result.append(badge.badge_name)
+        return result
+    finally:
+        session.close()
+
+def get_all_badges():
+    session = get_session()
+    try:
+        badges = session.query(Badges).all()
+        result = []
+        for badge in badges:
+            result.append({
+                "name" : badge.badge_name,
+                "description" : badge.badge_description,
+                "valeur" : badge.valeur,
+                "type" : badge.type
+            })
+        return result
     finally:
         session.close()

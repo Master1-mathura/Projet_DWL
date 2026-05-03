@@ -18,6 +18,7 @@ if os.getenv("TESTING") != "1":
     for i in range(max_retries):
         try:
             init_db()
+            repository.init_default_badges()
             print("Connexion à la base de données réussie !")
             break 
         except (OperationalError, DatabaseError) as e:
@@ -164,6 +165,36 @@ def get_user_settings(user_id):
     if output is None:
         return jsonify({"error": "User not found."}), 404
     return jsonify(output), 200
+
+@app.route('/userbadges/<int:user_id>', methods=['POST'])
+def save_user_badge(user_id):
+    data = request.get_json()
+    badge_name = data.get('badgeName')
+    if not badge_name:
+        return jsonify({"error": "Badge Name is required."}), 400
+    output = repository.save_user_badge(user_id, badge_name)
+    if output == -1:
+        return jsonify({"error": "Badge not found."}), 409
+    elif output == 0:
+        return jsonify({"error": "User not found."}), 404
+    elif output == -2:
+        return jsonify({"error": "An error occurred while saving the badge."}), 500
+    return jsonify({"message": "Badge saved successfully.","data" : output}), 200
+
+@app.route('/userbadges/<int:user_id>', methods=['GET'])
+def get_user_badges(user_id):
+    output = repository.get_user_badges(user_id)
+    if output is None:
+        return jsonify({"error": "User not found."}), 404
+    return jsonify(output), 200
+
+@app.route("/badges", methods = ['GET'])
+def get_all_badges():
+    output = repository.get_all_badges()
+    if output is None:
+        return jsonify({"error": "No badges found."}), 404
+    return jsonify(output), 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

@@ -90,5 +90,17 @@ class MovieService
         $url = API_BASE_URL . "/usersettings" . "/" . $user_id;
         return self::appelAPI($url);
     }
+    public static function saveUserBadge($user_id, $badgeName) {
+        $url = API_BASE_URL . "/userbadges" . "/" . $user_id;
+        return self::appelAPI($url, 'POST', ["badgeName" => $badgeName]);
+    }
+    public static function getUserBadges($user_id){
+        $url = API_BASE_URL . "/userbadges" . "/" . $user_id;
+        return self::appelAPI($url);
+    }
+    public static function getAllBadges(){
+        $url = API_BASE_URL . "/badges";
+        return self::appelAPI($url);
+    }
 }
 ?>

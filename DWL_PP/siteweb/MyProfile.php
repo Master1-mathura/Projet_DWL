@@ -44,9 +44,37 @@ if(isset($_POST['cocherBlurPoster'])) {
 
 
 }
-$ma_watchlist = MovieService::getWatchlist($id_user);
-$nombre_de_films = count($ma_watchlist);
+$data = json_decode(file_get_contents('php://input'), true);
 
+if (isset($data['badgeName'])) {
+    header('Content-Type: application/json');
+    $response = MovieService::saveUserBadge($id_user, $data['badgeName']);
+    echo json_encode($response);
+    exit;
+}
+$tous_les_badges = MovieService::getAllBadges();
+$badge_debloques = MovieService::getUserBadges($id_user);
+
+if (!is_array($badge_debloques) || isset($badge_debloques['error'])) {
+    $badge_debloques = [];
+}
+if (!is_array($tous_les_badges) || isset($tous_les_badges['error'])) {
+    $tous_les_badges = [];
+}
+
+$ma_watchlist = MovieService::getWatchlist($id_user);
+$survecu = 0;
+$abandonne = 0;
+foreach ($ma_watchlist as $film){
+    if ($film["etat"] == "Survécu"){
+        $survecu++;
+    }
+    elseif ($film["etat"] == "Abandon"){
+        $abandonne++;
+    }
+}
+
+$nombre_de_films = count($ma_watchlist);
 
 require_once "view/affichage_myprofile.php";
 ?>
