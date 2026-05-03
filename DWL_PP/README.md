@@ -18,41 +18,58 @@ Le projet est divisé en trois grands modules indépendants et orchestrés par *
 
 ## Guide d'Installation et de Lancement
 
-Pour faire tourner le projet sur votre machine, veuillez suivre attentivement les étapes ci-dessous.
+Le déploiement de l'application a été simplifié pour les utilisateurs finaux. Nos images Docker pré-compilées (embarquant déjà l'environnement, le code et l'IA) sont disponibles publiquement sur [Docker Hub](https://hub.docker.com/repository/docker/vidur28/dwl-frontend/).
 
-1. **Télécharger les données :** Le modèle d'IA a besoin de fichiers de données volumineux pour fonctionner. Comme ils sont ignorés par Git (.gitignore), vous devez les récupérer manuellement :
-- Dans le dossier app, créez un dossier nommé data s'il n'existe pas déjà.
-- Allez sur https://drive.google.com/drive/folders/19ti2-82yTjm8DlCH-d22emAAJSQcunXa?usp=sharing et téléchargez le dossier contenant ces trois fichiers exacts :
+Pour faire tourner le projet sur votre machine, veuillez suivre attentivement les étapes ci-dessous. Vous n'avez besoin que de deux fichiers.
 
-    - corpus.json (situé dans Dataset_Projet_TAL/collection_test/)
-    - embeddings_films.pt (situé à la racine)
-    - une video montrant toutes les fonctionnalités de notre projet
+### 1. Le fichier `.env`
 
-Glissez **UNIQUEMENT** le dossier data de telle sorte que l'arborescence ressemble exactement à ça :
+**[IMPORTANT] Il est crucial de noter que sans les clés d'accès, vous n'aurez pas accès à l'application !**
 
-```text
-DWL_PP/
-└── app/
-    ├── data/
-    │   ├── corpus.json
-    │   └── embeddings_films.pt
-    ├── app.py
-    └── ...
+Dans un dossier vide sur votre machine, créez un fichier `.env` et insérez-y les clés d'accès (fournies séparément pour des raisons de sécurité) :
+```env
+DB_PASSWORD=votre_mot_de_passe_tidb
+HF_TOKEN=votre_token_hugging_face
+```
+### 2. Le fichier docker-compose.yml
+Dans ce même dossier, créez un fichier docker-compose.yml avec la configuration suivante :
+
+```yaml
+services:
+  application:
+    image: vidur28/dwl-backend:latest
+    platform: linux/amd64
+    ports:
+      - 4000:4000
+    environment:
+      DB_HOST: "gateway01.eu-central-1.prod.aws.tidbcloud.com"
+      DB_USER: "2wBLzwP8VbUog4z.root"
+      DB_PASSWORD: ${DB_PASSWORD}
+      HF_TOKEN: ${HF_TOKEN}
+      DB_NAME: "test" 
+      DB_PORT: "4000"
+
+  pageweb:
+    image: vidur28/dwl-frontend:latest
+    platform: linux/amd64
+    ports:
+      - 8000:80
+    depends_on:
+      - application
 ```
 
-2. **Lancer les conteneurs avec Docker** : Une fois les données en place, ouvrez un terminal à la racine du projet (DWL_PP) et lancez la commande suivante :
+*Note : L'attribut platform: linux/amd64 permet d'assurer la compatibilité sur les Mac équipés de puces Apple Silicon ARM.*
 
+### 3. Lancer les conteneurs avec Docker
+Ouvrez un terminal dans ce dossier et lancez la commande suivante. Docker se chargera de tout télécharger et de démarrer l'infrastructure en arrière-plan :
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
-
-3. **Accéder à l'application** : Une fois les conteneurs démarrés (le backend Python peut prendre quelques secondes pour charger le modèle PyTorch en mémoire), vous pouvez accéder à l'application via votre navigateur :
-
-Site Web (Interface Utilisateur) : http://localhost:8000
+### 4. Accéder à l'application
+Une fois les conteneurs démarrés, vous pouvez accéder à l'application via votre navigateur : Site Web (Interface Utilisateur) : http://localhost:8000/MoteurRecherche.php
 
 ## Arborescence du Projet
-
-```text
+```txt
 DWL_PP/
 ├── app/                  # Backend Python (Flask, IA, CRUD)
 ├── siteweb/              # Frontend PHP (Interface, Proxy API, Assets)
