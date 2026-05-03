@@ -8,6 +8,16 @@ L'idée originale ? Proposer un moteur de recherche inversé basé sur les peurs
 
 ---
 
+## Démonstration et Ressources Annexes
+
+Pour découvrir le projet en action, une **vidéo de démonstration complète** de l'application est à votre disposition. 
+
+Bien que l'application finale se déploie désormais de façon autonome avec DockerHub, vous trouverez aussi sur ce lien nos datasets bruts (corpus JSON) et les poids d'entraînement du modèle IA (`embeddings_films.pt`), conservés à titre d'archive et de preuve de concept.
+
+**[Voir la vidéo de présentation et les Datasets (Lien Google Drive)](https://drive.google.com/drive/folders/19ti2-82yTjm8DlCH-d22emAAJSQcunXa?usp=sharing)**
+
+---
+
 ## Navigation dans le dépôt
 
 Ce dépôt est scindé en deux grandes parties correspondant à la genèse et à la finalisation du projet. **Pour explorer l'application web finale, rendez-vous dans `DWL_PP`**.
