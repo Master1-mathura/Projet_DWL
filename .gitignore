@@ -5,3 +5,10 @@ DWL_TAL/Dataset_Projet_TAL/raw/
 DWL_TAL/Dataset_Projet_TAL/scores/
 DWL_TAL/embeddings_films.pt
 DWL_PP/Test_Projet_V3/app/embeddings_films.pt
+.env
+*.pyc
+app/data/
+tests/screenshots/
+*.pyo
+.venv/
+venv/
