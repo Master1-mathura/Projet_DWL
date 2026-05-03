@@ -9,13 +9,25 @@ $searchResults = [];
 $username = $_SESSION['username'] ?? 'Unknown';
 $id_user = $_SESSION['id'] ?? 'Unknown';
 
+if ($id_user === 'Unknown') {
+    $theme = 'dark';
+    $isBlurred = 'off';
+} else {
+    if (!isset($_SESSION['theme']) || !isset($_SESSION['isBlurred'])) {
+        $settings = MovieService::getUserSettings($id_user);
+
+        $_SESSION['theme'] = $settings['theme'] ?? 'dark';
+        $_SESSION['isBlurred'] = $settings['blur_effect'] ?? 'off';
+    }
+    $theme = $_SESSION['theme'];
+    $isBlurred = $_SESSION['isBlurred'];
+}
+
 $api_error = null;
 
 if(isset($_GET["requete"])){
     $query = $_GET["requete"];
     $response = MovieService::searchMotor($query);
-    
-    // Attention, si message d'erreur on l'intercepte et on la met dans api_error qu'on envoie au html
     if (isset($response['error'])) {
         $api_error = $response['error'];
     } else {
@@ -34,8 +46,8 @@ if (isset($data['film_ID'])) {
     header('Content-Type: application/json');
     $movieData = MovieService::getMovieData($data['film_ID']);
     echo json_encode($movieData);
-    exit; // TRÈS IMPORTANT : on arrête tout ici !
-}
+    exit;
+};
 if (isset($_POST["connexion-deconnexion"])){
     if ($username != "Unknown") {
         $conneted = "Your are logged out";

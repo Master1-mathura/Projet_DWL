@@ -1,5 +1,5 @@
 from db import get_session,init_db
-from orm import User, Watchlist
+from orm import User, Watchlist, UserSettings
 
 def get_all(user_id):
     session = get_session()
@@ -67,6 +67,9 @@ def creation_user(data):
             return -1
 
         new_user = User(username=data["username"],mdp = data["password"])
+        default_settings = UserSettings()
+        new_user.settings = default_settings
+
         session.add(new_user)
         session.commit()
         return 0
@@ -75,7 +78,6 @@ def creation_user(data):
         return -2
     finally:
         session.close()
-
 def connexion(data):
     session = get_session()
     try:
@@ -132,3 +134,27 @@ def update_user(identifiant,data):
     finally:
         session.close()
 
+def update_user_settings(user_id, data):
+    session = get_session()
+    try:
+        user_settings = session.query(UserSettings).filter(UserSettings.user_id == user_id).first()
+        if not user_settings:
+            return 0
+        if "theme" in data:
+            user_settings.theme = data["theme"]
+        if "blur_effect" in data:
+            user_settings.blur_effect = data["blur_effect"]
+        session.commit()
+        return 1
+    finally:
+        session.close()
+
+def get_user_settings(user_id):
+    session = get_session()
+    try:
+        user_settings = session.query(UserSettings).filter(UserSettings.user_id == user_id).first()
+        if not user_settings:
+            return None
+        return {"theme": user_settings.theme, "blur_effect": user_settings.blur_effect}
+    finally:
+        session.close()

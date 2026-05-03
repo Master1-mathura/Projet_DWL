@@ -8,6 +8,7 @@ class User(Base):
     username = Column(String(255),nullable=False, unique=True)
     mdp = Column(String(255),nullable=False)
     watchlist = relationship("Watchlist", back_populates="user",cascade="all, delete")
+    settings = relationship("UserSettings", back_populates="user", cascade="all, delete", uselist=False)
 
 class Watchlist(Base):
     __tablename__ = "watchlist"
@@ -18,3 +19,11 @@ class Watchlist(Base):
     background = Column(String(255),nullable=False)
     etat = Column(String(20),nullable=False)
     user = relationship("User", back_populates="watchlist")
+
+class UserSettings(Base):
+    __tablename__ = "user_settings"
+    id = Column(Integer,primary_key=True,autoincrement=True)
+    user_id = Column(Integer,ForeignKey("users.id", ondelete="CASCADE"),unique=True)
+    theme = Column(String(20),nullable=False,default="dark")
+    blur_effect = Column(String(20),nullable=False,default="off")
+    user = relationship("User", back_populates="settings")

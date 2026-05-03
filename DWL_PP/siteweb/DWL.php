@@ -4,12 +4,13 @@ require_once "service/MovieService.php";
 session_start();
 
 $username = $_SESSION['username'] ?? 'Unknown';
+
 if ($username == "Unknown") {
     header("Location: Login.php");
     exit;
 }
 $id_user = $_SESSION['id'];
-
+$theme = $_SESSION['theme'] ;
 $data = json_decode(file_get_contents('php://input'), true);
 if (isset($data['film_ID'])) {
     header('Content-Type: application/json');

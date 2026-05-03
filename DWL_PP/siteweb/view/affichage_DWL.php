@@ -6,16 +6,34 @@
         <link rel="stylesheet" href="assets/css/DWL.css">
         <title>Don't WatchList</title>
     </head>
-    <body>
-        <div id="bg-layer"></div>
+    <body class="theme-<?php echo htmlspecialchars($theme); ?>">
+        <div id="bg-layer" style="<?= ($_SESSION['isBlurred'] === 'on') ? 'filter: blur(10px);' : '' ?>"></div>
         <div id="bg-overlay"></div>
-        <header class="dwl-header">
-            <a href="MoteurRecherche.php" class="back-link">
-                <span class="icon">←</span> Back to Search
-            </a>
-            <h1><?php echo isset($response) ? $response : 'My Watchlist'; ?></h1>
+        <header class="main-header">
+            <div class="nav">
+                <h1>Welcome <span><?php echo htmlspecialchars($username); ?></span></h1>
+                <a href="MoteurRecherche.php" class="watchlist-link" title="Voir ma Watchlist">
+                    <p>Search Engine</p>
+                </a>
+                <a href="MyProfile.php" class="watchlist-link" title="Mon Profil">
+                    <p>My Profile</p>
+                </a>
+                <form method="POST" action="MoteurRecherche.php">
+                    <?php
+                        if ($username != "Unknown") {
+                            $btnClass = "btn-logout";
+                            $btnText = "← Log Out";
+                        } else {
+                            $btnClass = "btn-login";
+                            $btnText = "→ Log In";
+                        }
+                    ?>
+                    <button type="submit" name="connexion-deconnexion" class="<?php echo $btnClass; ?>">
+                        <?php echo $btnText; ?>
+                    </button>
+                </form>
+            </div>
         </header>
-
         <div class="app-content">
             <section class="active-info-section">
                 <span class="active-badge">Search in progress</span>
@@ -46,17 +64,17 @@
                 <h2 class="section-title">MY WATCHLIST</h2>
                 <div class="carousel-wrapper">
                     <button class="carousel-nav-btn left-btn" onclick="prevMovie()">&#10094;</button>
-                    
+
                     <div class="movie-layout" id="carousel">
                         <?php foreach ($watchlist as $movie) : ?>
-                            <article class="movie-card" 
+                            <article class="movie-card"
                                     onclick="selectMovie(this)"
                                     data-id="<?= htmlspecialchars($movie['imdb_id']) ?>"
                                     data-bg="<?= htmlspecialchars($movie['background']) ?>"
                                     data-title="<?= htmlspecialchars($movie['film_name']) ?>"
                                     data-state = "<?= htmlspecialchars($movie['etat']) ?>">
                                 <div class="card-overlay"></div>
-                                <img src="<?= htmlspecialchars($movie['poster']) ?>" alt="Affiche" class="movie-poster">
+                                <img src="<?= htmlspecialchars($movie['poster'])?>" alt="Affiche" class="movie-poster" style="<?= ($_SESSION['isBlurred'] === 'on') ? 'filter: blur(1px);' : '' ?>">
 
                                 <div class="movie-info">
                                     <h2><?= htmlspecialchars($movie['film_name']) ?></h2>

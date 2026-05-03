@@ -6,13 +6,11 @@ function openBox(){
 function closeBox(){
     box.style.display = "none";
 }
-
 function closeOnOutsideClick(event){
     if(event.target === box){
         closeBox();
     }
 }
-
 async function showDetails(ID) {
     console.log(ID);
     const response = await fetch('MoteurRecherche.php',{
@@ -53,20 +51,14 @@ async function showDetails(ID) {
         scoreText.style.color = "#e74c3c";
     }
     document.getElementById("box-score").innerText = score;
-    document.getElementById("box-poster-container").innerHTML = `<img src="${metadata.poster}" class="poster-img" alt="Affiche du film">`;
+    document.getElementById("box-poster-container").innerHTML = `<img src="${metadata.poster}" class="poster-img" alt="Affiche du film" style="${isBlurred === 'on' ? 'filter: blur(5px);' : ''}">`;
+
     document.getElementById("modal-film-id").value = ID;
 
     openBox();
 }
-
 async function ajouterWatchlist(event) {
     event.preventDefault(); //Empeche le formulaire de recharger la page
-    
-    if (currentUsername === 'Unknown') {
-        window.location.href = "Login.php";
-        return;
-    }
-    
     const filmID = document.getElementById("modal-film-id").value;
 
     const formData = new URLSearchParams(); //Les données pour la requête

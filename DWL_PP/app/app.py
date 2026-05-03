@@ -150,5 +150,20 @@ def delete_user(id):
         return jsonify({"error" : "Deletion Error"}),400
     return jsonify({"message" : "Account Deleted"}),200
 
+@app.route('/usersettings/<int:user_id>', methods=['PUT'])
+def update_user_settings(user_id):
+    data = request.get_json()
+    output = repository.update_user_settings(user_id, data)
+    if output == 0:
+        return jsonify({"error": "User not found."}), 404
+    return jsonify({"message": "Settings updated successfully."}), 200
+
+@app.route('/usersettings/<int:user_id>', methods=['GET'])
+def get_user_settings(user_id):
+    output = repository.get_user_settings(user_id)
+    if output is None:
+        return jsonify({"error": "User not found."}), 404
+    return jsonify(output), 200
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=4000,debug=False)

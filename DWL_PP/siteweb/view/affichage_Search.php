@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="assets/css/search.css">
     <title>SEARCH BAR</title>
 </head>
-<body>
+<body class="theme-<?php echo htmlspecialchars($theme); ?>">
     <header class="main-header">
         <div class="nav">
             <h1>Welcome <span><?php echo htmlspecialchars($username); ?></span></h1>
@@ -93,7 +93,7 @@
                         </button>
                     </div>
                 <?php endforeach; ?>
-                
+
             <?php elseif (isset($_GET["requete"])) : ?>
                 <p class="no-results" style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 40px;">No movies found.</p>
             <?php endif; ?>
@@ -104,7 +104,11 @@
             <button class="close-btn" onclick="closeBox()">&times;</button>
 
             <div class="modal-layout">
-                <div id="box-poster-container" class="modal-poster-side"></div>
+                <div id="box-poster-container" class="modal-poster-side">
+                    <script>
+                        const isBlurred = <?php echo json_encode($_SESSION["isBlurred"]); ?>;
+                    </script>
+                </div>
 
                 <div class="modal-info-side">
                     <span class="modal-badge">MOVIE DETAILS</span>

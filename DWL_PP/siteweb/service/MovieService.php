@@ -82,5 +82,13 @@ class MovieService
         $url = API_BASE_URL . "/compte" . "/" . $id_user;
         return self::appelAPI($url, 'DELETE');
     }
+    public static function updateUserSettings($user_id, $theme, $blurred) {
+        $url = API_BASE_URL . "/usersettings" . "/" . $user_id;
+        return self::appelAPI($url, 'PUT', ["theme" => $theme, "blur_effect" => $blurred]);
+    }
+    public static function getUserSettings($user_id) {
+        $url = API_BASE_URL . "/usersettings" . "/" . $user_id;
+        return self::appelAPI($url);
+    }
 }
 ?>

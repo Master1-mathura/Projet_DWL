@@ -1,18 +1,14 @@
 /* =========================================
-   VARIABLES & RESET (Cohérence avec Search)
+   1. VARIABLES & RESET
    ========================================= */
 :root {
     --primary-color: #3f2257;
     --primary-light: #bba4d6;
     --accent-color: #7b58a3;
     --bg-color: #0f0a18;
-    --surface-color: #1a1325;
     --text-main: #f5f0ff;
     --text-muted: #a494bc;
-    
-    --radius-lg: 16px;
-    --radius-md: 8px;
-    --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 * {
@@ -26,282 +22,330 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     height: 100vh;
-    overflow: hidden; /* Empêche le scroll de la page entière, effet "Application" */
-    display: flex;
-    flex-direction: column;
+    overflow: hidden; /* Désactive le scroll de la page entière */
+    position: relative;
 }
 
 /* =========================================
-   ARRIÈRE-PLAN DYNAMIQUE (BACKGROUND)
+   2. THEME LIGHT (Overrides)
+   ========================================= */
+.theme-light {
+    --primary-color: #6a4b93;
+    --primary-light: #482d6b;
+    --accent-color: #926fb9;
+    --bg-color: #e9e4f0;
+    --text-main: #2d2638;
+    --text-muted: #e9e4f0; /* Gardé clair pour contraster avec l'image de fond */
+}
+
+.theme-light .nav {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.theme-light .watchlist-icon {
+    filter: invert(0);
+}
+
+/* =========================================
+   3. ARRIÈRE-PLAN (IMAGE & DÉGRADÉ)
    ========================================= */
 #bg-layer {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     background-size: cover;
-    background-position: top center;
-    z-index: -2;
-    transition: opacity 0.4s ease-in-out;
+    background-position: center 20%;
+    z-index: 1;
+    transition: opacity 0.5s ease-in-out;
 }
 
-/* Le dégradé superposé pour lire le texte à gauche */
+/* Dégradé sombre pour que le texte à gauche reste toujours lisible */
 #bg-overlay {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(90deg, rgba(15, 10, 24, 1) 0%, rgba(15, 10, 24, 0.8) 40%, rgba(15, 10, 24, 0.2) 100%);
-    z-index: -1;
+    background: linear-gradient(90deg, rgba(15, 10, 24, 0.95) 0%, rgba(15, 10, 24, 0.6) 45%, rgba(15, 10, 24, 0.1) 100%);
+    z-index: 2;
 }
 
 /* =========================================
-   HEADER
+   4. NAVIGATION (Centrée et transparente)
    ========================================= */
-.dwl-header {
-    padding: 2rem 4rem;
+
+.main-header {
+    position: absolute;
+    top: 3rem; /* Pour être à la même hauteur que le margin-top de search.css */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 800px; /* Identique à search.css */
+    z-index: 100;
+    display: flex;
+    justify-content: center; /* Permet de centrer la nav qui fait 700px à l'intérieur */
+}
+
+.nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 10;
+    width: 100%;
+    max-width: 700px; /* Aligné avec la barre de recherche */
+    background: rgba(26, 19, 37, 0.6); /* Surface color avec transparence */
+    backdrop-filter: blur(10px); /* Effet verre trempé / Glassmorphism */
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: 1px solid rgba(187, 164, 214, 0.15); /* Bordure subtile de ta couleur primary-light */
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+.nav h1 {
+    font-size: 1rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
 }
 
-.back-link {
+.nav h1 span {
+    font-weight: 800;
     color: var(--primary-light);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.1rem;
+}
+
+.watchlist-link {
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: var(--transition);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.back-link:hover {
+    gap: 8px;
+    text-decoration: none;
     color: white;
-    transform: translateX(-5px);
-    text-shadow: 0 0 10px rgba(187, 164, 214, 0.5);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    padding: 8px 15px;
+    border-radius: 20px;
 }
 
-.dwl-header h1 {
-    font-size: 1.5rem;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
+.watchlist-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary-light);
 }
+
+.watchlist-icon {
+    width: 20px;
+    filter: invert(1);
+}
+
+/* Boutons Log In / Log Out */
+.btn-logout, .btn-login {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+}
+
+.btn-logout { background: rgba(231, 76, 60, 0.2); color: #ff6b6b; border: 1px solid rgba(231, 76, 60, 0.3); }
+.btn-logout:hover { background: #e74c3c; color: white; }
+
+.btn-login { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+.btn-login:hover { background: #2ecc71; color: white; }
 
 /* =========================================
-   LAYOUT PRINCIPAL (Basé sur ton croquis)
+   5. CONTENU PRINCIPAL
    ========================================= */
 .app-content {
     position: relative;
-    flex: 1;
-    display: flex;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10; /* Au-dessus du background */
 }
 
-/* SECTION GAUCHE : INFOS DU FILM ACTIF */
+/* SECTION GAUCHE : INFOS DU FILM */
 .active-info-section {
     position: absolute;
-    top: 15%;
-    left: 4rem;
+    top: 50%;
+    transform: translateY(-45%);
+    left: 5%;
     width: 45%;
-    max-width: 600px;
-    z-index: 10;
+    max-width: 650px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .active-badge {
     font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     color: var(--primary-light);
     text-transform: uppercase;
+    font-weight: bold;
 }
 
 #active-title {
-    font-size: 4.5rem;
+    font-size: 4.5rem; /* Titre massif */
     line-height: 1;
-    font-weight: 800;
+    font-weight: 900;
     text-transform: uppercase;
     color: white;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.8);
-    transition: var(--transition);
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
 }
 
 #active-synopsis {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     line-height: 1.6;
-    color: var(--text-muted);
-    text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
     display: -webkit-box;
+    line-clamp: 4;
+    -webkit-line-clamp: 4; /* Limite à 4 lignes pour ne pas polluer l'écran */
     -webkit-box-orient: vertical;
     overflow: hidden;
-    transition: var(--transition);
+    margin-bottom: 10px;
 }
 
 .action-buttons {
     display: flex;
-    gap: 15px;
-    margin-top: 10px;
+    gap: 12px;
+    align-items: center;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
     color: white;
-    border: none;
-    padding: 15px 35px;
-    border-radius: 50px;
-    font-size: 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 0.95rem;
     font-weight: bold;
     cursor: pointer;
     transition: var(--transition);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--accent-color), var(--primary-light));
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(123, 88, 163, 0.5);
+    background: white;
+    color: black;
 }
 
-/* SECTION DROITE / BAS : CARROUSEL */
+#update-state-select {
+    outline: none;
+    cursor: pointer;
+}
+
+/* SECTION DROITE / BAS : CARROUSEL MINIATURE */
 .dwl-container {
     position: absolute;
-    bottom: 3rem;
-    right: 0;
-    width: 55%;
-    padding-left: 2rem;
-    z-index: 10;
+    bottom: 30px;
+    right: 4%;
+    width: 45%; /* Ne prend que la moitié droite de l'écran */
+    max-width: 600px;
 }
 
 .section-title {
-    font-size: 1rem;
+    font-size: 0.85rem;
     letter-spacing: 2px;
-    color: var(--primary-light);
-    margin-bottom: 15px;
-    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+    text-align: right;
 }
 
-/* Le conteneur du carrousel */
+.carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Les affiches réduites */
 .movie-layout {
     display: flex;
-    gap: 20px;
+    gap: 12px;
     overflow-x: auto;
-    padding: 10px 0 30px 0;
+    padding: 15px 5px;
     scroll-behavior: smooth;
-    /* Masquer la scrollbar pour un look propre */
-    -ms-overflow-style: none;  
-    scrollbar-width: none;  
+    scrollbar-width: none; /* Cache la scrollbar (Firefox) */
 }
+.movie-layout::-webkit-scrollbar { display: none; } /* Cache la scrollbar (Chrome/Safari) */
 
-.movie-layout::-webkit-scrollbar {
-    display: none;
-}
-
-/* Les affiches dans le carrousel */
 .movie-card {
-    flex: 0 0 160px; /* Largeur fixe de l'affiche */
-    height: 240px;
-    border-radius: var(--radius-md);
-    overflow: hidden;
+    flex: 0 0 100px; /* Largeur minuscule ! */
+    height: 150px;   /* Hauteur minuscule ! */
+    border-radius: 8px;
     cursor: pointer;
-    position: relative;
+    opacity: 0.4; /* Très effacé quand non sélectionné */
     transition: var(--transition);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-    opacity: 0.5; /* Assombri par défaut */
-    transform: scale(0.95);
     border: 2px solid transparent;
+    overflow: hidden;
 }
 
-.movie-card.active, 
-.movie-card:hover {
+.movie-card:hover, .movie-card.active {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.1) translateY(-5px); /* Se soulève légèrement */
     border-color: var(--primary-light);
-    box-shadow: 0 15px 35px rgba(123, 88, 163, 0.4);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
 }
 
 .movie-poster {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition);
 }
 
-.movie-card:hover .movie-poster {
-    transform: scale(1.1); /* Léger zoom au survol */
-}
-
-/* On cache le h2 original de la boucle PHP puisqu'il s'affiche en gros à gauche */
 .movie-info {
-    display: none; 
+    display: none; /* Cache le titre sous l'affiche */
 }
 
-/* =========================================
-   CARROUSEL NAVIGATION (Flèches & Compteur)
-   ========================================= */
-.carousel-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
+/* Flèches du carrousel */
 .carousel-nav-btn {
     position: absolute;
     z-index: 20;
-    background: rgba(26, 19, 37, 0.85); /* Fond sombre violet transparent */
-    border: 1px solid var(--primary-light);
-    color: var(--primary-light);
-    width: 45px;
-    height: 45px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
     cursor: pointer;
     transition: var(--transition);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .carousel-nav-btn:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: scale(1.15);
-    box-shadow: 0 0 15px rgba(187, 164, 214, 0.6);
+    background: white;
+    color: black;
+    transform: scale(1.1);
 }
 
-.left-btn {
-    left: -15px; /* Déborde légèrement à gauche */
-}
+.left-btn { left: -15px; }
+.right-btn { right: -15px; }
 
-.right-btn {
-    right: 15px; /* Déborde légèrement à droite */
-}
-
-/* On ajuste le padding du carrousel pour ne pas que les posters passent sous les flèches */
-.movie-layout {
-    padding: 20px 40px 30px 40px; 
-    width: 100%;
-    /* Le reste de tes propriétés .movie-layout reste identique */
-}
-
+/* =========================================
+   COMPTEUR DU CARROUSEL (Badge lisible)
+   ========================================= */
 #carousel-counter {
-    text-align: center;
-    margin-top: 5px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--primary-light);
-    letter-spacing: 3px;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.8);
-    font-family: monospace; /* Donne un effet de compteur digital sympa */
+    /* Le style de la petite pilule */
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    backdrop-filter: blur(5px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+
+    /* Le texte */
+    font-size: 0.95rem;
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: 2px;
+
+    /* Placement en bas à droite */
+    width: fit-content;
+    margin: 15px 0 0 auto; /* Le "auto" à gauche pousse le bloc tout à droite */
 }
+

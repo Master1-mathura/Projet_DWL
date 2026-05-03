@@ -1,7 +1,7 @@
 /* =========================================
    VARIABLES & RESET
    ========================================= */
-   :root {
+:root {
     /* Couleurs basées sur ton logo (nuances de violet) */
     --primary-color: #3f2257;
     --primary-light: #bba4d6;
@@ -10,10 +10,46 @@
     --surface-color: #1a1325;
     --text-main: #f5f0ff;
     --text-muted: #a494bc;
-    
+
     --radius-lg: 16px;
     --radius-md: 8px;
     --transition: all 0.3s ease;
+}
+
+.theme-light {
+    --primary-color: #6a4b93;
+    --primary-light: #482d6b;
+    --accent-color: #926fb9;
+    --bg-color: #e9e4f0;
+    --surface-color: #ffffff;
+    --text-main: #2d2638;
+    --text-muted: #6b5d7d;
+}
+
+.theme-light .profile-container {
+    background: #ffffff;
+    border: 1px solid rgba(123, 88, 163, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.theme-light .nav {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.theme-light .profile-info h2 {
+    color: var(--text-main);
+}
+
+.theme-light .watchlist-icon {
+    /* On enlève le invert(1) pour que l'icône redevienne sombre.
+       On met une ombre très légère et discrète. */
+    filter: invert(0) drop-shadow(0 0 2px rgba(0, 0, 0, 0.1));
+}
+
+.theme-light .watchlist-link:hover .watchlist-icon {
+    /* Au survol, l'icône reste sombre mais prend une belle ombre aux couleurs de ton thème */
+    transform: scale(1.15) rotate(5deg);
+    filter: invert(0) drop-shadow(0 0 8px var(--primary-color));
 }
 
 * {
@@ -740,7 +776,7 @@ h1 {
     max-width: 1000px;
     height: 280px;
     margin: 40px auto;
-    
+
     /* Fond dégradé et bordures transparentes inspirés de ton modal */
     background: linear-gradient(135deg, #1a1325 0%, #0f0a18 100%);
     border: 1px solid rgba(187, 164, 214, 0.15);
@@ -769,14 +805,14 @@ h1 {
     position: absolute;
     left: 70px;
     bottom: 4px;
-    width: 64px;  
-    height: 64px; 
+    width: 64px;
+    height: 64px;
     background-repeat: no-repeat;
     background-size: cover;
-    
+
     transform: scale(2);
     transform-origin: bottom left;
-    
+
     /* Ajout d'une lueur pour le faire ressortir du fond sombre */
     filter: drop-shadow(0 0 8px rgba(187, 164, 214, 0.5));
 }
@@ -788,7 +824,7 @@ h1 {
 
 #dino.state-dead {
     background-image: url('../images/Dead.png');
-    animation: animDead 0.5s steps(4) forwards; 
+    animation: animDead 0.5s steps(4) forwards;
     filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.6)); /* Lueur rouge quand il meurt */
     z-index: 10;
 }
@@ -909,4 +945,66 @@ h1 {
     top: -10px;
     border-radius: 50%;
     background: rgba(187, 164, 214, 0.08);
+}
+
+/* =========================================
+   MODAL LIGHT MODE OVERRIDES
+   ========================================= */
+/* Fond derrière le pop-up plus clair */
+.theme-light .box-overlay {
+    background: rgba(233, 228, 240, 0.85); /* Un violet/gris très clair et transparent */
+}
+
+/* Le fond du pop-up lui-même */
+.theme-light .premium-modal {
+    background: var(--surface-color);
+    border: 2px solid var(--primary-light);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Le titre du film en sombre (car le fond est maintenant clair) */
+.theme-light #box-title {
+    color: var(--text-main);
+    text-shadow: none; /* On enlève l'ombre noire qui bave sur fond blanc */
+}
+
+/* Bouton fermer (la petite croix) */
+.theme-light .close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-main);
+}
+
+.theme-light .close-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* La jauge de score (fond gris clair au lieu de noir) */
+.theme-light .rating-track {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.theme-light .premium-add-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #ffffff; /* Texte blanc sur fond sombre/coloré, parfait pour la lisibilité */
+}
+
+/* On inverse les couleurs de la petite icône ronde "+" au survol */
+.theme-light .premium-add-btn:hover .icon {
+    background: #ffffff;
+    color: var(--primary-color);
+}
+
+.theme-light .score-text {
+    background-color: #ffffff; /* Fond blanc pur pour le score */
+    color: var(--text-main);   /* Texte sombre */
+    padding: 2px 12px;         /* Espace autour du texte pour faire une belle pilule */
+    border-radius: 20px;       /* Bords très arrondis */
+    font-size: 0.95rem;        /* Un poil plus petit pour que ça rentre bien */
+    text-shadow: none;         /* On enlève toute ombre sur le texte */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Petite ombre douce sous la pilule */
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
