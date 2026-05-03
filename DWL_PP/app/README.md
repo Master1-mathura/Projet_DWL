@@ -31,17 +31,31 @@ L'API implémente un **CRUD complet** sur les différentes entités de l'applica
 * **Update** : Modification de l'état de visionnage d'un film (`PUT /watchlist/<user_id>/<imdbID>`)
 * **Delete** : Retrait d'un film de la liste (`DELETE /watchlist/<user_id>/<imdbID>`)
 
+### 3. Entité UserSettings
+* **Read** : Récupération des préférences utilisateur (thème, effet de flou) (`GET /usersettings/<user_id>`)
+* **Update** : Mise à jour des préférences de l'interface utilisateur (`PUT /usersettings/<user_id>`)
+
+### 4. Entité Badges (Gamification)
+* **Read** : Récupération des badges obtenus par un utilisateur (`GET /userbadges/<user_id>`)
+* **Read All** : Récupération de la liste complète de tous les badges disponibles (`GET /badges`)
+* **Create** : Attribution d'un badge à un utilisateur (`POST /userbadges/<user_id>`)
+
 ---
 
 ## Persistance des Données & ORM
 
 La persistance des données repose sur **SQLAlchemy**.
 
-* **Modélisation des classes** : Les tables `users` et `watchlist` sont utilisées via `declarative_base()`.
-* **Gestion des Relations (1-n)** : Une relation One-to-Many connecte les utilisateurs à leurs films dans la watchlist.
+* **Modélisation des classes** : Les tables `users`, `watchlist`, `user_settings`, `badges` et `liaison_badges` sont utilisées via `declarative_base()`.
+* **Gestion des Relations** : 
+    * One-to-Many entre les utilisateurs et leur watchlist.
+    * One-to-One entre les utilisateurs et leurs paramètres (`UserSettings`).
+    * Many-to-Many entre les utilisateurs et les badges obtenus.
 * **Intégrité Référentielle** : Des suppressions en cascade sont configurées pour maintenir l'intégrité de la base de données lors de la suppression de profils.
-* **Résilience** : Lors du lancement en mode non-test, le backend effectue jusqu'à 10 tentatives de connexion à la base de données pour pallier les éventuels délais de démarrage du conteneur de base de données
-* **Configuration des environnements** : L'environnement de test utilise une base de données SQLite en mémoire (`sqlite:///:memory:`) pour des exécutions rapides et isolées, tandis que l'environnement de production s'appuie sur MySQL
+* **Cloud Database** : La base de données est hébergée sur **TiDB Serverless**. La connexion est sécurisée via SSL/TLS, utilisant le driver `pymysql`.
+* **Configuration Sécurisée** : Les identifiants de connexion à la base de données (`DB_PASSWORD`) et les clés d'API (comme le `HF_TOKEN`) sont injectés dynamiquement via des variables d'environnement (`.env`) pour éviter toute fuite d'information sensible.
+* **Résilience** : L'application effectue jusqu'à 10 tentatives de connexion au démarrage pour assurer la liaison avec le cloud avant de lancer le serveur.
+* **Environnements** : L'environnement de test utilise une base de données SQLite en mémoire (`sqlite:///:memory:`) pour des exécutions rapides et isolées.
 
 ---
 
@@ -56,5 +70,6 @@ La gestion des erreurs garantit une API robuste et informative :
 
 Le backend est conçu pour un déploiement via Docker :
 * L'application utilise `python:3.11`.
-* Les dépendances incluent Flask, SQLAlchemy, et Pytest pour les tests
-* La configuration `db.py` s'adapte dynamiquement selon les variables d'environnement (`TESTING`, `DB_HOST`, etc.) pour faciliter les déploiements locaux et CI/CD
+* Le `Dockerfile` est optimisé pour le téléchargement des modèles PyTorch sur CPU (`--index-url https://download.pytorch.org/whl/cpu`).
+* Les dépendances incluent Flask, SQLAlchemy, PyMySQL, Sentence-Transformers, Pytest, et Playwright.
+* Un fichier `.dockerignore` est en place pour exclure le fichier `.env` de l'image de build, renforçant la sécurité de l'architecture.
