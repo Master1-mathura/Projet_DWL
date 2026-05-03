@@ -35,7 +35,7 @@ if(isset($_GET["requete"])){
     }
 }
 
-if(isset($_POST["add_watchlist"])){
+if(isset($_POST["add_watchlist"]) && $id_user !== 'Unknown'){
     $imdb_id = $_POST["add_watchlist"];
     $metadata = MovieService::getMovieData($imdb_id);
     $ajout = MovieService::addWatchlist($metadata,$id_user);

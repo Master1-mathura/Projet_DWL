@@ -9,7 +9,8 @@ if os.getenv("TESTING") == "1":
     DATABASE_URL = "sqlite:///:memory:"
     engine = create_engine(DATABASE_URL, echo=False, connect_args={'check_same_thread': False})
 else:
-    DATABASE_URL = f"mysql+mysqlconnector://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}/{DB_CONFIG['database']}?charset=utf8mb4"
+    # On intègre pymysql, le port, et on sécurise la connexion pour TiDB
+    DATABASE_URL = f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}?ssl_verify_cert=true&ssl_verify_identity=true"
     engine = create_engine(DATABASE_URL, echo=True)
 
 engine = create_engine(DATABASE_URL, echo=True)

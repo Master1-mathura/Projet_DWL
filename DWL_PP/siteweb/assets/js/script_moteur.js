@@ -59,19 +59,39 @@ async function showDetails(ID) {
 }
 async function ajouterWatchlist(event) {
     event.preventDefault(); //Empeche le formulaire de recharger la page
+    if (typeof currentUsername !== 'undefined' && currentUsername === 'Unknown') {
+        window.location.href = "Login.php";
+        return; // On arrête la fonction ici, le film ne sera pas ajouté !
+    }
     const filmID = document.getElementById("modal-film-id").value;
-
+    
     const formData = new URLSearchParams(); //Les données pour la requête
     formData.append('add_watchlist',filmID);
+    Swal.fire({
+        icon: 'success',
+        title: 'Film added to watchlist!',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'bottom-end',
+    });
     try {
         await fetch('', {
             method: 'POST',
             body: formData,
             headers: {'Content-Type' : 'application/x-www-form-urlencoded'}
         });
-        alert("Film added to watchlist");
     } catch(error){
         console.error("Error while adding :", error);
-        alert("An error occurred.");
+        Swal.fire({
+            icon: 'error',
+            title: 'An error occurred.',
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            toast: true,
+            position: 'bottom-end',
+        });
     }
 }

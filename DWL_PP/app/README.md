@@ -1,72 +1,60 @@
 # Backend API & Moteur de Recherche - Projet "Don't Watchlist"
 
-Ce dossier `app` contient le cœur algorithmique et le serveur backend de notre projet. Développé en Python, il expose une API REST via Flask et orchestre la communication entre le frontend, notre moteur de recherche sémantique basé sur l'Intelligence Artificielle, l'API externe TMDB et notre base de données MySQL.
+Ce dossier `app` constitue le cœur de notre application. Développé en Python (Flask), il orchestre l'API REST, la persistance des données via un ORM, et intègre notre moteur de recherche sémantique basé sur l'IA. 
 
 ---
 
-## Architecture du Dossier
+## Architecture
+On a séparé les rôles :
 
-L'architecture a été pensée de manière modulaire, séparant clairement les responsabilités (routage, logique métier, accès aux données) :
-
-* **`app.py`** : Le point d'entrée de l'API Flask. Il gère les routes, les requêtes entrantes, et communique avec le moteur de recherche et la base de données.
-* **`search_moteur.py`** : Le cœur de notre Intelligence Artificielle. Il contient toute la logique de Traitement Automatique des Langues (TAL) pour la recherche sémantique.
-* **`config.py`**, **`db.py`**, **`repository.py`** : La couche d'accès aux données (DAO). Gestion de la connexion MySQL et exécution des requêtes SQL.
-* **`donnees.sql`** : Le script d'initialisation de notre base de données.
-* **`Dockerfile` & `requirements.txt`** : Les fichiers nécessaires à la conteneurisation et au déploiement de l'application.
-
----
-
-## Moteur de Recherche Sémantique (`search_moteur.py`)
-
-Nous avons conçu un moteur de recherche capable de comprendre le contexte des requêtes utilisateurs (recherche vectorielle) en utilisant `sentence-transformers` et `torch`. 
-
-Le processus complet comprend plusieurs étapes clés :
-
-### 1. Prétraitement des Données
-Lors de l'initialisation, le système lit le corpus de scripts (`corpus.json`). Il isole le texte pertinent en parsant spécifiquement les balises `<scene_description>`. Ce texte est ensuite découpé en morceaux (chunks) de 200 mots avec un chevauchement de 50 mots pour conserver le contexte d'une phrase à l'autre.
-
-### 2. Encodage (Embeddings)
-Nous utilisons le modèle pré-entraîné `all-MiniLM-L6-v2` pour transformer ces morceaux de texte en vecteurs mathématiques (embeddings). Pour optimiser les temps de démarrage ultérieurs, ces tenseurs PyTorch sont sauvegardés localement dans `data/embeddings_films.pt`.
-
-### 3. Calcul de Similarité
-Lorsqu'un utilisateur effectue une recherche, sa requête est vectorisée. Nous calculons ensuite la similarité cosinus entre la requête et les morceaux de films.
-Le score final d'un film est une combinaison équilibrée (50/50) entre la moyenne de ses meilleurs morceaux (top 5) et son score maximum absolu.
-
-### 4. Pseudo-Relevance Feedback (PRF)
-Pour accroître la précision, nous avons implémenté un système de PRF. Le moteur effectue une première passe, isole les résultats les plus pertinents, extrait leur vecteur moyen, et l'ajoute à la requête initiale (avec un poids alpha de 0.7) pour effectuer une seconde recherche affinée.
+* **Routage (`app.py`)** : Le contrôleur principal. Il gère la réception des requêtes HTTP, l'extraction des paramètres JSON, et le formatage des réponses
+* **Data Access Object (`repository.py`)** : Cette couche encapsule toute la logique d'interaction avec la base de données. Le contrôleur Flask n'écrit jamais de logique métier ou de requêtes SQL directement.
+* **Modélisation (`orm.py`)** : Définition des entités de la base de données sous forme de classes Python avec SQLAlchemy.
+* **Configuration (`config.py` & `db.py`)** : Centralisation de la connexion à la base de données, avec une bascule entre l'environnement de production (MySQL) et l'environnement de test (SQLite in-memory)
+* **Moteur IA (`search_moteur.py`)** : Isole la logique de traitement NLP (Sentence Transformers, calcul de similarité cosinus) et d'expansion de requêtes.
 
 ---
 
-## Endpoints de l'API REST (`app.py`)
+## Fonctionnalités et Opérations CRUD
 
-L'application Flask (tournant sur le port `4000`) expose les routes suivantes pour le frontend :
+L'API implémente un **CRUD complet** sur les différentes entités de l'application :
 
-| Route | Méthode | Rôle & Traitement effectué |
-| :--- | :---: | :--- |
-| `/` | `GET` | Route de vérification renvoyant un message de bienvenue. |
-| `/search` | `GET` | Reçoit la requête utilisateur (`?q=...`). Interroge le moteur de recherche et renvoie les 5 meilleurs films. **Traitement visuel :** Le backend attribue dynamiquement un code couleur (rouge `#9b2c3b`, orange `#b87322`, vert `#2e7d52`) selon le score de pertinence. |
-| `/movies/<imdbID>` | `GET` | Reçoit un identifiant IMDB, effectue une requête vers l'API TMDB, et reformate les données pour renvoyer un objet JSON propre (titre, synopsis, poster, background, note globale). |
-| `/watchlist` | `GET` | Interroge la base de données et renvoie tous les films enregistrés. |
-| `/watchlist` | `POST` | Reçoit les métadonnées d'un film depuis le front et l'ajoute à la base de données via le repository. |
-| `/watchlist/<imdbID>` | `DELETE` | Reçoit un identifiant IMDB et supprime le film correspondant de la base de données. |
-| `/watchlist/<imdbID>` | `PUT` | Reçoit un identifiant IMDB et une charge utile (payload) contenant le nouvel état du film (ex: "Survécu", "Abandon"), puis met à jour la base de données. |
----
+### 1. Entité Utilisateur (User)
+* **Create** : Inscription sécurisée d'un nouvel utilisateur (`POST /compte`)
+* **Read** : Authentification (`POST /connexion`)
+* **Update** : Modification du profil (nom d'utilisateur, mot de passe) (`PUT /compte/<id>`)
+* **Delete** : Suppression du compte utilisateur (`DELETE /compte/<id>`)
 
-## Persistance des Données
-
-La gestion de la base de données MySQL est centralisée et sécurisée :
-
-* **Structure (`donnees.sql`)** : Une table `watchlist` stockant l'ID, le nom du film, les liens vers les images (poster et background) et l'état de visionnage (défini par défaut sur "En Attente" lors de l'insertion).
-* **Variables d'environnement (`config.py`)** : Les identifiants de connexion s'adaptent automatiquement à l'environnement (récupération des variables `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` définies par Docker, avec une valeur de repli pour le développement local).
-* **Repository Pattern (`repository.py`)** : Les fonctions `get_all()` et `add_movies()` `delete_movie()`, et `update_movie_state()` encapsulent les requêtes SQL, séparant ainsi la logique base de données des contrôleurs Flask.
+### 2. Entité Watchlist
+* **Create** : Ajout d'un film avec métadonnées à la watchlist d'un utilisateur (`POST /watchlist`)
+* **Read** : Récupération de tous les films d'un utilisateur (`GET /watchlist/<user_id>`)
+* **Update** : Modification de l'état de visionnage d'un film (`PUT /watchlist/<user_id>/<imdbID>`)
+* **Delete** : Retrait d'un film de la liste (`DELETE /watchlist/<user_id>/<imdbID>`)
 
 ---
 
-## Déploiement et Conteneurisation (`Dockerfile`)
+## Persistance des Données & ORM
 
-Afin de garantir un environnement de production stable, l'application backend est dockerisée :
+La persistance des données repose sur **SQLAlchemy**.
 
-1.  **Image de base** : Utilisation de `python:3.11`.
-2.  **Optimisation IA** : Installation spécifique de `torch` en version CPU (`--extra-index-url https://download.pytorch.org/whl/cpu`) afin de réduire drastiquement le poids de l'image (pas de bibliothèques CUDA inutiles pour notre déploiement).
-3.  **Dépendances** : Installation des paquets via `requirements.txt` (Flask, pandas, sentence-transformers, mysql-connector-python, etc.).
-4.  **Exposition** : L'API est servie sur le port `4000` via la commande `python app.py`.
+* **Modélisation des classes** : Les tables `users` et `watchlist` sont utilisées via `declarative_base()`.
+* **Gestion des Relations (1-n)** : Une relation One-to-Many connecte les utilisateurs à leurs films dans la watchlist.
+* **Intégrité Référentielle** : Des suppressions en cascade sont configurées pour maintenir l'intégrité de la base de données lors de la suppression de profils.
+* **Résilience** : Lors du lancement en mode non-test, le backend effectue jusqu'à 10 tentatives de connexion à la base de données pour pallier les éventuels délais de démarrage du conteneur de base de données
+* **Configuration des environnements** : L'environnement de test utilise une base de données SQLite en mémoire (`sqlite:///:memory:`) pour des exécutions rapides et isolées, tandis que l'environnement de production s'appuie sur MySQL
+
+---
+
+## Gestion des Erreurs et Exceptions
+La gestion des erreurs garantit une API robuste et informative :
+* **Gestionnaire Global** : L'utilisation de `@app.errorhandler(Exception)` permet de capturer les erreurs non gérées et de retourner des réponses JSON structurées avec un statut HTTP 500, évitant le plantage de l'application
+* **Codes HTTP Sémantiques** : L'API retourne des codes de statut précis selon le contexte : 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), et 409 (Conflict)
+
+---
+
+## Conteneurisation et Déploiement
+
+Le backend est conçu pour un déploiement via Docker :
+* L'application utilise `python:3.11`.
+* Les dépendances incluent Flask, SQLAlchemy, et Pytest pour les tests
+* La configuration `db.py` s'adapte dynamiquement selon les variables d'environnement (`TESTING`, `DB_HOST`, etc.) pour faciliter les déploiements locaux et CI/CD

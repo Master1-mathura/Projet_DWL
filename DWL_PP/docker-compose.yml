@@ -3,24 +3,15 @@ services:
     build: ./app
     ports:
       - 4000:4000
-    depends_on:
-      - db
     volumes:
       - ./app:/app
     environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: 123456
-      DB_NAME: watchlist_api
-
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: watchlist_api
-    volumes:
-      - db_data:/var/lib/mysql
+      DB_HOST: "gateway01.eu-central-1.prod.aws.tidbcloud.com"
+      DB_USER: "2wBLzwP8VbUog4z.root"
+      DB_PASSWORD: ${DB_PASSWORD}
+      HF_TOKEN: ${HF_TOKEN}
+      DB_NAME: "test" 
+      DB_PORT: "4000"
 
   pageweb:
     image: php:apache
@@ -35,18 +26,13 @@ services:
     build: ./app
     depends_on:
       - application
-      - db
     volumes:
       - ./app:/app
       - ./tests:/tests
     environment:
       TESTING: "1"
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: 123456
-      DB_NAME: watchlist_api
       PYTHONPATH: /app
+      DB_PASSWORD: ${DB_PASSWORD}
+      HF_TOKEN: ${HF_TOKEN}
     working_dir: /
     command: python -m pytest tests/
-volumes:
-  db_data:

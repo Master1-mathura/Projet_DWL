@@ -6,15 +6,14 @@ require_once "service/MovieService.php";
 session_start();
 $username = $_SESSION['username'] ?? 'Unknown';
 
-if ($_SESSION['username'] == "Unknown") {
+if ($username === 'Unknown') {
     header("Location: Login.php");
     exit;
 }
 
-$id_user = $_SESSION['id'];
-
-$theme = $_SESSION['theme'];
-$isBlurred = $_SESSION['isBlurred'];
+$id_user = $_SESSION['id'] ?? null;
+$theme = $_SESSION['theme'] ?? 'dark';
+$isBlurred = $_SESSION['isBlurred'] ?? 'off';
 
 if(isset($_POST['DarkMode'])) {
     $response = MovieService::updateUserSettings($id_user, "dark", $isBlurred);

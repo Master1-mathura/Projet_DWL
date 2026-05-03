@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/search.css">
     <title>SEARCH BAR</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="theme-<?php echo htmlspecialchars($theme); ?>">
     <header class="main-header">
@@ -106,7 +107,7 @@
             <div class="modal-layout">
                 <div id="box-poster-container" class="modal-poster-side">
                     <script>
-                        const isBlurred = <?php echo json_encode($_SESSION["isBlurred"]); ?>;
+                        const isBlurred = <?php echo json_encode($_SESSION["isBlurred"] ?? "off"); ?>;
                     </script>
                 </div>
 
@@ -131,6 +132,9 @@
             </div>
         </div>
     </div>
+    <script>
+        const currentUsername = "<?php echo addslashes($username); ?>";
+    </script>
     <script src="assets/js/script_moteur.js"> </script>
     <script src="assets/js/DinoGame.js"></script>
 </body>
