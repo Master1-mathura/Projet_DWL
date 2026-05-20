@@ -17,16 +17,16 @@ def wait_for_server(url, timeout=240):
     raise Exception(f"Server not ready: {url}")
 
 def test_login_e2e():
-    if not wait_for_server("http://host.docker.internal:4000"):
-        raise Exception("Le serveur localhost:4000 n'est pas accessible")
+    if not wait_for_server("http://application:4000"):
+        raise Exception("Le serveur application:4000 n'est pas accessible")
     with sync_playwright() as p:
         chromium = p.chromium
         browser = chromium.launch()
         page = browser.new_page()
 
         #Creation compte
-        page.goto("http://host.docker.internal:8000/Register.php")
-        page.fill('input[name="username"]', "Testeur1")
+        page.goto("http://pageweb/Register.php")
+        page.fill('input[name="username"]', "Testeur2")
         page.fill('input[name="password"]', "123456")
         page.screenshot(path = "tests/screenshots/creation_success.png")
         page.click('button[name="register"]')
@@ -34,11 +34,11 @@ def test_login_e2e():
 
         page.click("text=Log in")
 
-        page.fill('input[name="username"]',"Testeur1")
+        page.fill('input[name="username"]',"Testeur2")
         page.fill('input[name="password"]',"123456")
 
         page.click('button[name="connexion"]')
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(2000)
         page.screenshot(path="tests/screenshots/login_success.png")
 
         assert "login" not in page.url.lower()
@@ -46,14 +46,14 @@ def test_login_e2e():
         browser.close()
 
 def test_search_e2e():
-    if not wait_for_server("http://host.docker.internal:4000"):
-        raise Exception("Le serveur localhost:4000 n'est pas accessible")
+    if not wait_for_server("http://application:4000"):
+        raise Exception("Le serveur application:4000 n'est pas accessible")
     with sync_playwright() as p:
         chromium = p.chromium
         browser = chromium.launch()
         page = browser.new_page()
 
-        page.goto("http://host.docker.internal:8000/MoteurRecherche.php")
+        page.goto("http://pageweb/MoteurRecherche.php")
         page.fill('input[name="requete"]', "I am afraid of spiders")
         page.get_by_role("button", name="Search").click()
 

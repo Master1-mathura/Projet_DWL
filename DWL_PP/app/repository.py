@@ -1,5 +1,6 @@
 from db import get_session,init_db
 from orm import User, Watchlist, UserSettings,Badges
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def get_all(user_id):
     session = get_session()
@@ -65,8 +66,8 @@ def creation_user(data):
         user = session.query(User).filter(User.username == data["username"]).first()
         if user :
             return -1
-
-        new_user = User(username=data["username"],mdp = data["password"])
+        hashed_password = generate_password_hash(data["password"])
+        new_user = User(username=data["username"],mdp=hashed_password)
         default_settings = UserSettings()
         new_user.settings = default_settings
 
@@ -78,11 +79,13 @@ def creation_user(data):
         return -2
     finally:
         session.close()
+
 def connexion(data):
     session = get_session()
     try:
-        user = session.query(User).filter((User.username == data["username"]) & (User.mdp == data["password"])).first()
-        if user:
+        user = session.query(User).filter((User.username == data["username"])).first()
+
+        if user and check_password_hash(user.mdp, data["password"]):
             return {"id" : user.id, "username" : user.username}
         return None
     finally:
@@ -116,8 +119,11 @@ def update_user(identifiant,data):
 
         if "old_mdp" in data and "mdp" in data:
             if data["old_mdp"] != "":
-                if data["old_mdp"] != user.mdp:
+                if not check_password_hash(user.mdp, data["old_mdp"]):
                     return -2 #Ancien mot de passe incorrect
+
+                data["mdp"] = generate_password_hash(data["mdp"])
+
                 data.pop("old_mdp")
         update = False
         for key,value in data.items():

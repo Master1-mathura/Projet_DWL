@@ -48,7 +48,7 @@ if(isset($_POST["delete_profile"])){
     if(isset($reponse['message'])){
         $message = $reponse['message'];
         session_destroy();
-        header("Location: login.php");
+        header("Location: Login.php");
         exit();
     }
 }
